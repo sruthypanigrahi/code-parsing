@@ -1,11 +1,11 @@
 # USB PD Specification Parser
 
-![Build Status](https://github.com/username/usb-pd-parser/workflows/CI/badge.svg)
-![Coverage](https://img.shields.io/codecov/c/github/username/usb-pd-parser)
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)
-![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
-![Type Checking](https://img.shields.io/badge/type%20checking-mypy-blue.svg)
+[![CI](https://github.com/username/usb-pd-parser/workflows/CI/badge.svg)](https://github.com/username/usb-pd-parser/actions)
+[![Coverage](https://img.shields.io/codecov/c/github/username/usb-pd-parser)](https://codecov.io/gh/username/usb-pd-parser)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
 
 A high-performance Python tool that extracts Table of Contents (ToC) from USB Power Delivery specification PDFs and converts them into structured JSONL format for downstream processing and analysis.
 
@@ -19,16 +19,41 @@ A high-performance Python tool that extracts Table of Contents (ToC) from USB Po
 
 ## 🚀 Quick Start
 
+### For Reviewers (Fastest Way)
+```bash
+# 1. Clone and enter directory
+git clone https://github.com/username/usb-pd-parser.git
+cd usb-pd-parser
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Run quick demo
+python quick_start.py
+```
+
+### Prerequisites
+- Python 3.9 or higher
+- Git
+
+### Installation & Setup
+
 ```bash
 # 1. Clone the repository
 git clone https://github.com/username/usb-pd-parser.git
 cd usb-pd-parser
 
-# 2. Create virtual environment
+# 2. Create and activate virtual environment
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# On Windows:
+.venv\Scripts\activate
+
+# On macOS/Linux:
+source .venv/bin/activate
 
 # 3. Install dependencies
+pip install --upgrade pip
 pip install -r requirements.txt
 
 # 4. Copy and configure settings
@@ -36,13 +61,32 @@ cp application.example.yml application.yml
 # Edit application.yml with your PDF path
 
 # 5. Run the parser
+# Using config file:
 python main.py
 
-# Or with CLI arguments
-python main.py --input assets/sample.pdf --output outputs/out.jsonl --debug
+# Using CLI arguments (recommended):
+python main.py --input "assets/usb_pd_spec.pdf" --output "outputs/toc.jsonl" --debug
 
 # 6. View results
-cat outputs/out.jsonl | head -5
+# On Windows:
+type outputs\toc.jsonl | findstr /n ".*" | more
+
+# On macOS/Linux:
+cat outputs/toc.jsonl | head -10
+```
+
+### Command Line Options
+
+```bash
+python main.py [OPTIONS]
+
+Options:
+  --input PATH     Input PDF file path (required)
+  --output PATH    Output JSONL file path (default: outputs/output.jsonl)
+  --config PATH    Configuration file path (default: application.yml)
+  --debug          Enable debug logging
+  --max-pages INT  Maximum pages to process (default: all)
+  --help           Show this message and exit
 ```
 
 ## 📊 Example Input → Output
@@ -67,12 +111,21 @@ cat outputs/out.jsonl | head -5
 ```
 
 **Sample Output** ([`assets/sample_output.jsonl`](assets/sample_output.jsonl)):
-```json
+
+```jsonl
 {"page":1,"text":"Universal Serial Bus\nPower Delivery Specification\nRevision: 3.2\nVersion: 1.1","image_count":0,"table_count":0}
 {"doc_title":"USB Power Delivery Specification","section_id":"1","title":"Introduction","page":15,"level":1,"parent_id":null,"full_path":"1 Introduction"}
 {"doc_title":"USB Power Delivery Specification","section_id":"1.1","title":"Overview","page":16,"level":2,"parent_id":"1","full_path":"1.1 Overview"}
+{"doc_title":"USB Power Delivery Specification","section_id":"1.2","title":"Scope","page":18,"level":2,"parent_id":"1","full_path":"1.2 Scope"}
+{"doc_title":"USB Power Delivery Specification","section_id":"2","title":"Technical Specifications","page":25,"level":1,"parent_id":null,"full_path":"2 Technical Specifications"}
+{"doc_title":"USB Power Delivery Specification","section_id":"2.1","title":"Power Requirements","page":26,"level":2,"parent_id":"2","full_path":"2.1 Power Requirements"}
 {"doc_title":"USB Power Delivery Specification","section_id":"2.1.1","title":"Voltage Specifications","page":27,"level":3,"parent_id":"2.1","full_path":"2.1.1 Voltage Specifications"}
 ```
+
+**Output Structure**:
+- **Page Content**: Raw text with metadata (images, tables)
+- **TOC Entries**: Hierarchical structure with section IDs, titles, page numbers
+- **Validation**: Automatic detection of parsing issues
 
 **Validation Report**:
 ```json
@@ -101,14 +154,35 @@ usb-pd-parser/
 │   ├── 📊 performance.py      # Performance monitoring
 │   └── 📝 logger.py           # Logging setup
 ├── 🧪 tests/                  # Test suite
-│   └── test_parser.py         # Unit tests
+│   ├── test_parser.py         # TOC parser unit tests
+│   ├── test_extractor.py      # PDF extraction tests
+│   ├── test_validator.py      # Data validation tests
+│   ├── test_integration.py    # Integration tests
+│   ├── conftest.py           # Pytest configuration
+│   └── fixtures/             # Test data and fixtures
 ├── 📁 assets/                 # Sample input files
+│   ├── sample.pdf            # Small test PDF
+│   ├── usb_pd_spec.pdf       # Full USB PD specification
+│   └── sample_output.jsonl   # Expected output example
 ├── 📁 outputs/                # Generated output files
 ├── 🚀 main.py                 # CLI entry point
 ├── ⚙️  application.yml         # Configuration file
+├── ⚙️  application.example.yml # Configuration template
 ├── 📦 requirements.txt        # Python dependencies
+├── 📦 requirements-dev.txt    # Development dependencies
+├── 🐳 Dockerfile             # Container configuration
+├── 📄 LICENSE                # MIT License
 └── 📖 README.md              # This file
 ```
+
+### Key Components
+
+- **`src/app.py`**: Main application orchestrator that coordinates all components
+- **`src/extractor.py`**: PDF processing with PyMuPDF and OCR fallback
+- **`src/parser.py`**: TOC extraction using regex patterns and heuristics
+- **`src/validator.py`**: Data quality checks and validation reporting
+- **`src/models.py`**: Type-safe data models using Pydantic
+- **`main.py`**: Command-line interface with argument parsing
 
 ## 🔧 Configuration
 
@@ -132,27 +206,64 @@ parser:
   deduplicate: true      # Remove duplicate entries
 ```
 
-## 🧪 Running Tests
+## 🧪 Testing
+
+### Quick Test Run
 
 ```bash
 # Install test dependencies
-pip install pytest pytest-cov
+pip install pytest pytest-cov pytest-mock
 
-# Run all tests
+# Run all tests with coverage
+pytest tests/ -v --cov=src --cov-report=term-missing
+```
+
+### Comprehensive Testing
+
+```bash
+# Run all tests with detailed output
 pytest tests/ -v
 
-# Run with coverage report
+# Run with HTML coverage report
 pytest tests/ --cov=src --cov-report=html --cov-report=term
 
-# Run specific test class
-pytest tests/test_parser.py::TestTOCParser -v
+# Run specific test modules
+pytest tests/test_parser.py -v                    # TOC parser tests
+pytest tests/test_extractor.py -v                 # PDF extraction tests
+pytest tests/test_validator.py -v                 # Validation tests
+pytest tests/test_integration.py -v               # End-to-end tests
 
-# Run end-to-end tests
-pytest tests/test_end_to_end.py -v
+# Run specific test classes or methods
+pytest tests/test_parser.py::TestTOCParser -v
+pytest tests/test_parser.py::TestTOCParser::test_parse_simple_toc -v
+
+# Run tests with specific markers
+pytest -m "not slow" -v                          # Skip slow tests
+pytest -m "integration" -v                       # Run only integration tests
 
 # View coverage report
-open htmlcov/index.html  # On Windows: start htmlcov/index.html
+# On Windows:
+start htmlcov\index.html
+
+# On macOS:
+open htmlcov/index.html
+
+# On Linux:
+xdg-open htmlcov/index.html
 ```
+
+### Test Categories
+
+- **Unit Tests**: Individual component testing (`test_parser.py`, `test_extractor.py`)
+- **Integration Tests**: Full pipeline testing (`test_integration.py`)
+- **Performance Tests**: Large file processing benchmarks
+- **Edge Case Tests**: Error handling and boundary conditions
+
+### Test Coverage Goals
+
+- **Minimum**: 85% line coverage
+- **Target**: 95% line coverage
+- **Critical paths**: 100% coverage (parser, validator)
 
 ## 🛠️ Development
 

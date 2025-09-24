@@ -16,21 +16,22 @@ class LoggerFactory:
             "%Y-%m-%d %H:%M:%S"
         )
     
-    def create_logger(self, output_dir: Path | None = None) -> logging.Logger:
+    def create_logger(self, output_dir: Path | None = None, debug: bool = False) -> logging.Logger:
         """Create configured logger instance."""
         logger = logging.getLogger(self._name)
-        logger.setLevel(logging.INFO)
+        logger.setLevel(logging.DEBUG if debug else logging.INFO)
         
         if not logger.handlers:
-            self._add_console_handler(logger)
+            self._add_console_handler(logger, debug)
             if output_dir:
                 self._add_file_handler(logger, output_dir)
         
         return logger
     
-    def _add_console_handler(self, logger: logging.Logger) -> None:
+    def _add_console_handler(self, logger: logging.Logger, debug: bool = False) -> None:
         """Add console handler to logger."""
         ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG if debug else logging.INFO)
         ch.setFormatter(self._formatter)
         logger.addHandler(ch)
     
@@ -42,7 +43,7 @@ class LoggerFactory:
         logger.addHandler(fh)
 
 
-def get_logger(name: str = "usb_pd_parser", output_dir: Path | None = None) -> logging.Logger:
+def get_logger(name: str = "usb_pd_parser", output_dir: Path | None = None, debug: bool = False) -> logging.Logger:
     """Factory function for backward compatibility."""
     factory = LoggerFactory(name)
-    return factory.create_logger(output_dir)
+    return factory.create_logger(output_dir, debug)

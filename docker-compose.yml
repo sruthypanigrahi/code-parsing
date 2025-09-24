@@ -3,41 +3,21 @@ version: '3.8'
 services:
   usb-pd-parser:
     build: .
-    container_name: usb-pd-parser
     volumes:
       - ./assets:/app/assets:ro
       - ./outputs:/app/outputs
       - ./application.yml:/app/application.yml:ro
     environment:
       - PYTHONUNBUFFERED=1
-      - ENVIRONMENT=production
-    command: ["python", "main.py"]
-    
-  # Development service with hot reload
+    command: python main.py --input assets/sample.pdf --out outputs/docker_output.jsonl --debug
+
+  # Development service with mounted source code
   usb-pd-parser-dev:
-    build: 
-      context: .
-      target: base
-    container_name: usb-pd-parser-dev
+    build: .
     volumes:
       - .:/app
     environment:
       - PYTHONUNBUFFERED=1
-      - ENVIRONMENT=development
-    command: ["python", "main.py", "--debug"]
+    command: python main.py --help
     profiles:
       - dev
-
-  # Test runner service
-  test-runner:
-    build:
-      context: .
-      target: base
-    container_name: usb-pd-parser-test
-    volumes:
-      - .:/app
-    environment:
-      - PYTHONUNBUFFERED=1
-    command: ["pytest", "tests/", "-v", "--cov=src"]
-    profiles:
-      - test

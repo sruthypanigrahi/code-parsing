@@ -43,3 +43,7 @@ class Config:
     @property
     def max_pages(self) -> int | None:
         return self._config.get("max_pages")
+    
+    @max_pages.setter
+    def max_pages(self, value: int | None) -> None:
+        self._config["max_pages"] = value

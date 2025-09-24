@@ -1,0 +1,15 @@
+{"page":1,"text":"Sample Technical Document\nVersion 1.0\nTest Document for USB PD Parser\n\nTable of Contents\n1. Introduction  2\n1.1 Overview  2\n1.2 Scope  3\n2. Technical Specifications  4\n2.1 Power Requirements  4\n2.1.1 Voltage Specifications  5\n2.2 Communication Protocol  6\n3. Implementation  7\n3.1 Hardware Design  7\n3.2 Software Implementation  8","image_count":0,"table_count":0}
+{"page":2,"text":"1. Introduction\nThis document describes the technical specifications\nfor USB Power Delivery implementation.\n\n1.1 Overview\nUSB PD enables higher power delivery over USB connections.","image_count":0,"table_count":0}
+{"page":3,"text":"1.2 Scope\nThis specification covers power delivery up to 100W.","image_count":0,"table_count":0}
+{"page":4,"text":"2. Technical Specifications\n\n2.1 Power Requirements\nPower delivery shall support multiple voltage levels.","image_count":0,"table_count":0}
+{"page":5,"text":"2.1.1 Voltage Specifications\nSupported voltages: 5V, 9V, 15V, 20V","image_count":0,"table_count":0}
+{"doc_title":"USB Power Delivery Specification","section_id":"1","title":"Introduction","page":2,"level":1,"parent_id":null,"full_path":"1 Introduction"}
+{"doc_title":"USB Power Delivery Specification","section_id":"1.1","title":"Overview","page":2,"level":2,"parent_id":"1","full_path":"1.1 Overview"}
+{"doc_title":"USB Power Delivery Specification","section_id":"1.2","title":"Scope","page":3,"level":2,"parent_id":"1","full_path":"1.2 Scope"}
+{"doc_title":"USB Power Delivery Specification","section_id":"2","title":"Technical Specifications","page":4,"level":1,"parent_id":null,"full_path":"2 Technical Specifications"}
+{"doc_title":"USB Power Delivery Specification","section_id":"2.1","title":"Power Requirements","page":4,"level":2,"parent_id":"2","full_path":"2.1 Power Requirements"}
+{"doc_title":"USB Power Delivery Specification","section_id":"2.1.1","title":"Voltage Specifications","page":5,"level":3,"parent_id":"2.1","full_path":"2.1.1 Voltage Specifications"}
+{"doc_title":"USB Power Delivery Specification","section_id":"2.2","title":"Communication Protocol","page":6,"level":2,"parent_id":"2","full_path":"2.2 Communication Protocol"}
+{"doc_title":"USB Power Delivery Specification","section_id":"3","title":"Implementation","page":7,"level":1,"parent_id":null,"full_path":"3 Implementation"}
+{"doc_title":"USB Power Delivery Specification","section_id":"3.1","title":"Hardware Design","page":7,"level":2,"parent_id":"3","full_path":"3.1 Hardware Design"}
+{"doc_title":"USB Power Delivery Specification","section_id":"3.2","title":"Software Implementation","page":8,"level":2,"parent_id":"3","full_path":"3.2 Software Implementation"}
