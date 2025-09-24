@@ -1,10 +1,16 @@
-pdf:
-  input_file: "assets/USB_PD_R3_2 V1.1 2024-10.pdf"
+# USB PD Specification Parser Configuration
 
-output:
-  directory: "outputs"
-  toc_file: "usb_pd_spec.jsonl"
+# Input PDF file path
+pdf_input_file: "assets/USB_PD_R3_2 V1.1 2024-10.pdf"
 
-options:
-  ocr_fallback: true
-  max_pages: null   # null = all pages, or set a number (like 10)
+# Output directory
+output_directory: "outputs"
+
+# Output JSONL file
+toc_file: "outputs/usb_pd_spec.jsonl"
+
+# OCR fallback
+ocr_fallback: true
+
+# Max pages (null for all)
+max_pages: null

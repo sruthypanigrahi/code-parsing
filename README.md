@@ -1,8 +1,11 @@
 # USB PD Specification Parser
 
 ![Build Status](https://github.com/username/usb-pd-parser/workflows/CI/badge.svg)
+![Coverage](https://img.shields.io/codecov/c/github/username/usb-pd-parser)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)
+![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
+![Type Checking](https://img.shields.io/badge/type%20checking-mypy-blue.svg)
 
 A high-performance Python tool that extracts Table of Contents (ToC) from USB Power Delivery specification PDFs and converts them into structured JSONL format for downstream processing and analysis.
 
@@ -17,16 +20,29 @@ A high-performance Python tool that extracts Table of Contents (ToC) from USB Po
 ## 🚀 Quick Start
 
 ```bash
-# 1. Clone and install
+# 1. Clone the repository
 git clone https://github.com/username/usb-pd-parser.git
 cd usb-pd-parser
+
+# 2. Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 2. Run with sample PDF
-python main.py --input assets/sample.pdf --output outputs/out.jsonl
+# 4. Copy and configure settings
+cp application.example.yml application.yml
+# Edit application.yml with your PDF path
 
-# 3. View results
-cat outputs/out.jsonl
+# 5. Run the parser
+python main.py
+
+# Or with CLI arguments
+python main.py --input assets/sample.pdf --output outputs/out.jsonl --debug
+
+# 6. View results
+cat outputs/out.jsonl | head -5
 ```
 
 ## 📊 Example Input → Output
@@ -40,11 +56,33 @@ cat outputs/out.jsonl
 - ✅ Tables: 3,239 found
 - ✅ TOC Entries: 37 parsed
 
-**Sample Output** (`outputs/usb_pd_spec.jsonl`):
+**Sample Input Text**:
+```
+1. Introduction  15
+1.1 Overview  16
+1.2 Scope  18
+2. Technical Specifications  25
+2.1 Power Requirements  26
+2.1.1 Voltage Specifications  27
+```
+
+**Sample Output** ([`assets/sample_output.jsonl`](assets/sample_output.jsonl)):
 ```json
 {"page":1,"text":"Universal Serial Bus\nPower Delivery Specification\nRevision: 3.2\nVersion: 1.1","image_count":0,"table_count":0}
-{"doc_title":"USB Power Delivery Specification","section_id":"1.1","title":"Introduction","page":15,"level":2,"parent_id":"1","full_path":"1.1 Introduction"}
-{"doc_title":"USB Power Delivery Specification","section_id":"2.1.2","title":"Power Delivery Contract Negotiation","page":53,"level":3,"parent_id":"2.1","full_path":"2.1.2 Power Delivery Contract Negotiation"}
+{"doc_title":"USB Power Delivery Specification","section_id":"1","title":"Introduction","page":15,"level":1,"parent_id":null,"full_path":"1 Introduction"}
+{"doc_title":"USB Power Delivery Specification","section_id":"1.1","title":"Overview","page":16,"level":2,"parent_id":"1","full_path":"1.1 Overview"}
+{"doc_title":"USB Power Delivery Specification","section_id":"2.1.1","title":"Voltage Specifications","page":27,"level":3,"parent_id":"2.1","full_path":"2.1.1 Voltage Specifications"}
+```
+
+**Validation Report**:
+```json
+{
+  "duplicates": [],
+  "out_of_order": [],
+  "missing_pages": [],
+  "total_entries": 8,
+  "validation_passed": true
+}
 ```
 
 ## 🏗️ Project Structure
@@ -97,14 +135,23 @@ parser:
 ## 🧪 Running Tests
 
 ```bash
+# Install test dependencies
+pip install pytest pytest-cov
+
 # Run all tests
 pytest tests/ -v
 
-# Run with coverage
-pytest tests/ --cov=src --cov-report=html
+# Run with coverage report
+pytest tests/ --cov=src --cov-report=html --cov-report=term
 
-# Run specific test
-pytest tests/test_parser.py::TestTOCParser::test_parser_extracts_entry -v
+# Run specific test class
+pytest tests/test_parser.py::TestTOCParser -v
+
+# Run end-to-end tests
+pytest tests/test_end_to_end.py -v
+
+# View coverage report
+open htmlcov/index.html  # On Windows: start htmlcov/index.html
 ```
 
 ## 🛠️ Development
@@ -153,15 +200,18 @@ black . && ruff check . && mypy src --ignore-missing-imports && pytest
 
 ## 🚀 Features
 
-- ✅ **High Performance**: Processes 1000+ page PDFs efficiently
+- ✅ **High Performance**: Processes 1000+ page PDFs efficiently with streaming
 - ✅ **OCR Support**: Handles scanned PDFs with Tesseract integration
 - ✅ **Smart Parsing**: Multiple regex patterns for different TOC formats
-- ✅ **Data Validation**: Detects duplicates and ordering issues
-- ✅ **Type Safety**: Full type hints with Pydantic models
-- ✅ **Comprehensive Logging**: Detailed processing logs
-- ✅ **Configurable**: YAML-based configuration
-- ✅ **CLI Interface**: Easy command-line usage
-- ✅ **Well Tested**: Comprehensive test suite
+- ✅ **Data Validation**: Detects duplicates, missing pages, and ordering issues
+- ✅ **Type Safety**: Full type hints with Pydantic models and mypy checking
+- ✅ **Comprehensive Logging**: Structured logging with debug mode
+- ✅ **Configurable**: YAML-based configuration with CLI overrides
+- ✅ **CLI Interface**: Easy command-line usage with --debug option
+- ✅ **Well Tested**: Unit tests, edge cases, and end-to-end pipeline tests
+- ✅ **CI/CD Ready**: GitHub Actions with coverage, security, and quality checks
+- ✅ **Docker Support**: Containerized deployment with Tesseract OCR
+- ✅ **Security Focused**: Bandit security scanning and dependency vulnerability checks
 
 ## 📈 Performance
 

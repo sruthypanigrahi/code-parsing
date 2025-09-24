@@ -18,20 +18,28 @@ class Config:
 
     @property
     def pdf_input_file(self) -> Path:
-        return Path(self._config["pdf"]["input_file"])
+        return Path(self._config.get("pdf_input_file", "assets/sample.pdf"))
+    
+    @pdf_input_file.setter
+    def pdf_input_file(self, value: Path) -> None:
+        self._config["pdf_input_file"] = str(value)
 
     @property
     def output_directory(self) -> Path:
-        return Path(self._config["output"]["directory"])
+        return Path(self._config.get("output_directory", "outputs"))
 
     @property
     def toc_file(self) -> Path:
-        return self.output_directory / self._config["output"]["toc_file"]
+        return Path(self._config.get("toc_file", "outputs/output.jsonl"))
+    
+    @toc_file.setter
+    def toc_file(self, value: Path) -> None:
+        self._config["toc_file"] = str(value)
 
     @property
     def ocr_fallback(self) -> bool:
-        return bool(self._config["options"].get("ocr_fallback", False))
+        return bool(self._config.get("ocr_fallback", False))
 
     @property
     def max_pages(self) -> int | None:
-        return self._config["options"].get("max_pages")
+        return self._config.get("max_pages")

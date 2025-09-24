@@ -36,6 +36,10 @@ quick_*.py
 # Configuration
 application.yml
 
+# Sample files (keep small samples only)
+*.pdf
+!assets/sample_small.pdf
+
 # Temporary files
 *.tmp
 *.temp

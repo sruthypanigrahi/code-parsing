@@ -27,6 +27,7 @@ class USBPDParser:
             self._validate_and_report(toc_entries, pages)
         except Exception as e:
             self.logger.error(f"Processing failed: {e}")
+            raise  # Re-raise the exception so main.py can handle it
     
     def _extract_content(self) -> List[PageContent]:
         """Extract PDF content."""
