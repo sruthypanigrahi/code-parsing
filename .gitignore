@@ -11,6 +11,7 @@ dist/
 build/
 
 # Virtual environments
+.venv/
 venv/
 env/
 .env
@@ -32,6 +33,16 @@ outputs/
 test_*.py
 quick_*.py
 
+# Configuration
+application.yml
+
 # Temporary files
 *.tmp
 *.temp
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# MyPy cache
+.mypy_cache/
