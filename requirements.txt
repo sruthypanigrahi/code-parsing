@@ -1,0 +1,7 @@
+PyMuPDF
+pdf2image
+pytesseract
+pydantic
+pyyaml
+pytest
+pdfplumber

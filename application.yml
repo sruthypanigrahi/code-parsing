@@ -1,0 +1,10 @@
+pdf:
+  input_file: "assets/USB_PD_R3_2 V1.1 2024-10.pdf"
+
+output:
+  directory: "outputs"
+  toc_file: "usb_pd_spec.jsonl"
+
+options:
+  ocr_fallback: true
+  max_pages: null   # null = all pages, or set a number (like 10)
