@@ -414,3 +414,14 @@
 2025-09-25 00:24:36 [INFO] usb_pd_parser - Images: 4814
 2025-09-25 00:24:36 [INFO] usb_pd_parser - Tables: 3239
 2025-09-25 00:24:36 [INFO] usb_pd_parser - Done.
+2025-09-25 00:47:13 [INFO] usb_pd_parser - Starting PDF extraction...
+2025-09-25 00:51:31 [INFO] usb_pd_parser - Extracted 1047 pages.
+2025-09-25 00:51:31 [INFO] usb_pd_parser - Parsing Table of Contents...
+2025-09-25 00:51:31 [INFO] usb_pd_parser - Found 37 TOC entries.
+2025-09-25 00:51:31 [INFO] usb_pd_parser - Validating TOC...
+2025-09-25 00:51:31 [WARNING] usb_pd_parser - Validation issues: 27 found
+2025-09-25 00:51:31 [INFO] usb_pd_parser - Pages: 1047
+2025-09-25 00:51:31 [INFO] usb_pd_parser - Words: 308977
+2025-09-25 00:51:31 [INFO] usb_pd_parser - Images: 4814
+2025-09-25 00:51:31 [INFO] usb_pd_parser - Tables: 3239
+2025-09-25 00:51:31 [INFO] usb_pd_parser - Done.

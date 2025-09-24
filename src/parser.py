@@ -10,22 +10,65 @@ TOC_PATTERNS = [
 
 
 class TOCParser:
-    """Parses Table of Contents efficiently."""
+    """Parses Table of Contents from PDF text using multiple pattern strategies.
+    
+    This class implements intelligent TOC parsing with multiple regex patterns
+    to handle different formatting styles commonly found in technical specifications.
+    
+    Attributes:
+        doc_title (str): Title of the document being parsed.
+        
+    Example:
+        >>> parser = TOCParser("USB PD Specification")
+        >>> entries = parser.parse_toc([(1, "1.1 Introduction  15")])
+        >>> print(f"Found {len(entries)} TOC entries")
+    """
 
     def __init__(self, doc_title: str = "USB Power Delivery Specification"):
+        """Initialize TOC parser with document title.
+        
+        Args:
+            doc_title (str, optional): Title of the document. 
+                Defaults to "USB Power Delivery Specification".
+        """
         self._doc_title = doc_title
         self._patterns = self._compile_patterns()
     
     def _compile_patterns(self) -> List[re.Pattern[str]]:
-        """Get TOC patterns."""
+        """Get compiled regex patterns for TOC parsing.
+        
+        Returns:
+            List[re.Pattern[str]]: List of compiled regex patterns for different TOC formats.
+        """
         return TOC_PATTERNS
     
     @property
     def doc_title(self) -> str:
+        """Get the document title.
+        
+        Returns:
+            str: Document title used for TOC entries.
+        """
         return self._doc_title
 
     def parse_toc(self, pages: List[Tuple[int, str]]) -> List[TOCEntry]:
-        """Parse TOC from pages."""
+        """Parse Table of Contents from page text data.
+        
+        Processes multiple pages of text to extract TOC entries using pattern matching.
+        Automatically deduplicates entries and infers hierarchical relationships.
+        
+        Args:
+            pages (List[Tuple[int, str]]): List of (page_number, text_content) tuples.
+            
+        Returns:
+            List[TOCEntry]: Parsed and deduplicated TOC entries with inferred hierarchy.
+            
+        Example:
+            >>> parser = TOCParser()
+            >>> pages = [(1, "1.1 Introduction  15\n1.2 Overview  20")]
+            >>> entries = parser.parse_toc(pages)
+            >>> print(f"Parsed {len(entries)} entries")
+        """
         entries: List[TOCEntry] = []
         
         for _, text in pages:
