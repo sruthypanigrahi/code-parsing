@@ -342,3 +342,21 @@
 2025-09-27 01:34:27 [INFO] usb_pd_parser - TOC entries: 149
 2025-09-27 01:34:27 [INFO] usb_pd_parser - Content items: 4970
 2025-09-27 01:34:27 [INFO] usb_pd_parser - Spec file counts: {'paragraphs': 4593, 'images': 32, 'tables': 345, 'pages': 200}
+2025-09-27 02:06:35 [INFO] usb_pd_parser - Extracted 149 TOC entries to outputs\usb_pd_toc.jsonl
+2025-09-27 02:06:48 [INFO] usb_pd_parser - Extracted 26996 content items to outputs\usb_pd_content.jsonl
+2025-09-27 02:06:48 [INFO] usb_pd_parser - Pipeline completed successfully
+2025-09-27 02:06:48 [INFO] usb_pd_parser - TOC entries: 149
+2025-09-27 02:06:48 [INFO] usb_pd_parser - Content items: 26996
+2025-09-27 02:06:48 [INFO] usb_pd_parser - Spec file counts: {'paragraphs': 25760, 'images': 325, 'tables': 911, 'pages': 1047}
+2025-09-27 02:07:01 [INFO] usb_pd_parser - Extracted 149 TOC entries to outputs\usb_pd_toc.jsonl
+2025-09-27 02:07:06 [INFO] usb_pd_parser - Extracted 16013 content items to outputs\usb_pd_content.jsonl
+2025-09-27 02:07:06 [INFO] usb_pd_parser - Pipeline completed successfully
+2025-09-27 02:07:06 [INFO] usb_pd_parser - TOC entries: 149
+2025-09-27 02:07:06 [INFO] usb_pd_parser - Content items: 16013
+2025-09-27 02:07:06 [INFO] usb_pd_parser - Spec file counts: {'paragraphs': 15158, 'images': 176, 'tables': 679, 'pages': 600}
+2025-09-27 02:07:14 [INFO] usb_pd_parser - Extracted 149 TOC entries to outputs\usb_pd_toc.jsonl
+2025-09-27 02:07:16 [INFO] usb_pd_parser - Extracted 4970 content items to outputs\usb_pd_content.jsonl
+2025-09-27 02:07:16 [INFO] usb_pd_parser - Pipeline completed successfully
+2025-09-27 02:07:16 [INFO] usb_pd_parser - TOC entries: 149
+2025-09-27 02:07:16 [INFO] usb_pd_parser - Content items: 4970
+2025-09-27 02:07:16 [INFO] usb_pd_parser - Spec file counts: {'paragraphs': 4593, 'images': 32, 'tables': 345, 'pages': 200}
