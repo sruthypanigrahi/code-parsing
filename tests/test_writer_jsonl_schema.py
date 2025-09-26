@@ -16,18 +16,18 @@ def test_jsonl_schema_validation():
             title="Introduction",
             page=10,
             level=2,
-            full_path="1.1 Introduction"
+            full_path="1.1 Introduction",
         )
     ]
-    
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.jsonl', delete=False) as f:
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
         temp_path = Path(f.name)
-    
+
     writer = JSONLWriter()
     writer.write_list(entries, temp_path)
-    
+
     # Validate each line
-    with open(temp_path, 'r', encoding='utf-8') as f:
+    with open(temp_path, "r", encoding="utf-8") as f:
         for line in f:
             data = json.loads(line.strip())
             assert "doc_title" in data
@@ -36,5 +36,5 @@ def test_jsonl_schema_validation():
             assert "page" in data
             assert "level" in data
             assert "full_path" in data
-    
+
     temp_path.unlink()

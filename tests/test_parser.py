@@ -8,9 +8,13 @@ from src.parser import TOCParser
 def test_simple_toc_parsing():
     """Test parsing simple TOC entries."""
     from src.parsing_strategies import RegexTOCParser
+
     parser = RegexTOCParser("Test Document")
     mock_pages = [
-        (1, "Table of Contents\n1 Introduction 15\n1.1 Overview 16\n2 Technical Specifications 25"),
+        (
+            1,
+            "Table of Contents\n1 Introduction 15\n1.1 Overview 16\n2 Technical Specifications 25",
+        ),
     ]
 
     entries = parser.parse(mock_pages)
@@ -23,8 +27,11 @@ def test_simple_toc_parsing():
 def test_hierarchical_parsing():
     """Test parsing hierarchical TOC structure."""
     from src.parsing_strategies import RegexTOCParser
+
     parser = RegexTOCParser("Test Document")
-    mock_pages = [(1, "Table of Contents\n1.1.1 Subsection 27\n2.1 Power Requirements 26")]
+    mock_pages = [
+        (1, "Table of Contents\n1.1.1 Subsection 27\n2.1 Power Requirements 26")
+    ]
 
     entries = parser.parse(mock_pages)
 
@@ -39,9 +46,13 @@ def test_hierarchical_parsing():
 def test_malformed_input_handling():
     """Test handling of malformed TOC entries."""
     from src.parsing_strategies import RegexTOCParser
+
     parser = RegexTOCParser("Test Document")
     mock_pages = [
-        (1, "Table of Contents\nInvalid line without proper format\n1 Valid Entry 15\nAnother invalid line"),
+        (
+            1,
+            "Table of Contents\nInvalid line without proper format\n1 Valid Entry 15\nAnother invalid line",
+        ),
     ]
 
     entries = parser.parse(mock_pages)

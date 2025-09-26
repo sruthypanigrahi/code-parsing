@@ -6,7 +6,9 @@ from src.search import TOCSearcher
 from pathlib import Path
 
 # Extract first 20 pages
-extractor = PDFExtractor('assets/USB_PD_R3_2 V1.1 2024-10.pdf', Path('outputs'), True, 20)
+extractor = PDFExtractor(
+    "assets/USB_PD_R3_2 V1.1 2024-10.pdf", Path("outputs"), True, 20
+)
 pages = extractor.extract_content()
 
 # Search for TOC

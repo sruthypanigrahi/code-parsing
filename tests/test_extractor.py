@@ -13,7 +13,7 @@ def test_extract_front_pages_file_not_found():
         list(extract_front_pages(Path("nonexistent.pdf")))
 
 
-@patch('src.extractor.fitz')
+@patch("src.extractor.fitz")
 def test_extract_front_pages_success(mock_fitz):
     """Test successful page extraction."""
     # Mock PDF document
@@ -23,11 +23,11 @@ def test_extract_front_pages_success(mock_fitz):
     mock_page.get_text.return_value = "Sample text"
     mock_doc.__getitem__ = Mock(return_value=mock_page)
     mock_fitz.open.return_value = mock_doc
-    
+
     # Create a temporary file
     test_file = Path("test.pdf")
     test_file.touch()
-    
+
     try:
         pages = list(extract_front_pages(test_file, max_pages=2))
         assert len(pages) == 2
@@ -36,16 +36,16 @@ def test_extract_front_pages_success(mock_fitz):
         test_file.unlink()
 
 
-@patch('src.extractor.fitz')
+@patch("src.extractor.fitz")
 def test_get_doc_title_success(mock_fitz):
     """Test successful title extraction."""
     mock_doc = Mock()
     mock_doc.metadata = {"title": "Test Document"}
     mock_fitz.open.return_value = mock_doc
-    
+
     test_file = Path("test.pdf")
     test_file.touch()
-    
+
     try:
         title = get_doc_title(test_file)
         assert title == "Test Document"

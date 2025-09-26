@@ -15,22 +15,25 @@ def test_config_loading():
     # Create dummy PDF file
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as pdf_file:
         pdf_path = pdf_file.name
-    
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
-        f.write(f"""pdf_input_file: {pdf_path.replace(chr(92), '/')}
+        f.write(
+            f"""pdf_input_file: {pdf_path.replace(chr(92), '/')}
 output_directory: test_outputs
 toc_file: test.jsonl
 ocr_fallback: true
 max_pages: 100
-""")
+"""
+        )
         f.flush()
 
         config = Config(f.name)
         assert str(config.pdf_input_file) == pdf_path
         assert config.ocr_fallback
-        
+
         # Cleanup
         import os
+
         try:
             os.unlink(pdf_path)
             os.unlink(f.name)

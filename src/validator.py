@@ -30,9 +30,11 @@ def validate_iter(entries_iter: Iterator[TOCEntry]) -> Iterator[TOCEntry]:
                 )
                 dropped_count += 1
                 continue
-                
+
             # Check for obviously wrong OCR artifacts
-            if validated_entry.page > 999 and str(validated_entry.page).startswith(('20', '19')):
+            if validated_entry.page > 999 and str(validated_entry.page).startswith(
+                ("20", "19")
+            ):
                 logger.warning(
                     f"Suspicious page number {validated_entry.page} (looks like year) for section {validated_entry.section_id}"
                 )
