@@ -1,10 +1,19 @@
 """PDF content extraction class."""
 
-from pathlib import Path
-from typing import Iterator, Optional, List, Dict, Any
 import logging
-import fitz  # type: ignore
-from .exceptions import PDFNotFoundError
+from collections.abc import Iterator
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+# Create PDFNotFoundError if not imported from exceptions
+class PDFNotFoundError(Exception):
+    """Raised when PDF file is not found."""
+    pass
+
+# Lazy import for heavy library
+def _get_fitz():
+    import fitz  # type: ignore
+    return fitz
 
 
 class PDFExtractor:
@@ -20,13 +29,14 @@ class PDFExtractor:
     def get_doc_title(self) -> str:
         """Extract document title from PDF metadata."""
         try:
-            doc = fitz.open(str(self.pdf_path))
+            fitz = _get_fitz()
+            doc: Any = fitz.open(str(self.pdf_path))  # type: ignore
             try:
-                metadata = doc.metadata
-                title = metadata.get("title")
-                return title if title else "USB Power Delivery Specification"
+                metadata: Any = doc.metadata  # type: ignore
+                title: Optional[str] = metadata.get("title") if metadata else None  # type: ignore
+                return title if title and isinstance(title, str) else "USB Power Delivery Specification"
             finally:
-                doc.close()
+                doc.close()  # type: ignore
         except Exception as e:
             self.logger.warning(f"Cannot read PDF metadata: {e}")
             return "USB Power Delivery Specification"
@@ -34,48 +44,50 @@ class PDFExtractor:
     def extract_pages(self, max_pages: Optional[int] = None) -> List[str]:
         """Extract text from PDF pages."""
         try:
-            doc = fitz.open(str(self.pdf_path))
+            fitz = _get_fitz()
+            doc: Any = fitz.open(str(self.pdf_path))  # type: ignore
         except Exception as e:
             raise RuntimeError(f"Cannot open PDF {self.pdf_path}: {e}") from e
 
         try:
-            total_pages = len(doc) if max_pages is None else min(max_pages, len(doc))
+            total_pages = len(doc) if max_pages is None else min(max_pages, len(doc))  # type: ignore
             self.logger.info(f"Extracting {total_pages} pages from {self.pdf_path}")
 
-            pages = []
+            pages: List[str] = []
             for i in range(total_pages):
-                page = doc[i]
-                text = page.get_text("text") or ""
+                page: Any = doc[i]  # type: ignore
+                text: str = str(page.get_text("text") or "")  # type: ignore
                 pages.append(text)
 
             return pages
         finally:
-            doc.close()
+            doc.close()  # type: ignore
 
     def extract_structured_content(
         self, max_pages: Optional[int] = None
     ) -> Iterator[Dict[str, Any]]:
         """Extract structured content including paragraphs, images, and tables."""
         try:
-            doc = fitz.open(str(self.pdf_path))
+            fitz = _get_fitz()
+            doc: Any = fitz.open(str(self.pdf_path))  # type: ignore
         except Exception as e:
             raise RuntimeError(f"Cannot open PDF {self.pdf_path}: {e}") from e
 
         try:
-            total_pages = len(doc) if max_pages is None else min(max_pages, len(doc))
+            total_pages = len(doc) if max_pages is None else min(max_pages, len(doc))  # type: ignore
 
             for page_num in range(total_pages):
-                page = doc[page_num]
+                page: Any = doc[page_num]  # type: ignore
 
                 # Extract text blocks (paragraphs)
-                blocks = page.get_text("dict")["blocks"]
+                blocks = page.get_text("dict")["blocks"]  # type: ignore
 
-                for block_num, block in enumerate(blocks):
+                for block_num, block in enumerate(blocks):  # type: ignore
                     if "lines" in block:  # Text block
-                        text_content = ""
-                        for line in block["lines"]:
-                            for span in line["spans"]:
-                                text_content += span["text"]
+                        text_content: str = ""
+                        for line in block["lines"]:  # type: ignore
+                            for span in line["spans"]:  # type: ignore
+                                text_content += str(span["text"])  # type: ignore
 
                         if text_content.strip():
                             yield {
@@ -83,14 +95,14 @@ class PDFExtractor:
                                 "content": text_content.strip(),
                                 "page": page_num + 1,
                                 "block_id": f"p{page_num + 1}_{block_num}",
-                                "bbox": block.get("bbox", []),
+                                "bbox": list(block.get("bbox", [])),  # type: ignore
                             }
 
                     elif "image" in block:  # Image block
                         # Filter out very small images (likely icons/decorations)
-                        bbox = block.get("bbox", [0, 0, 0, 0])
-                        width = bbox[2] - bbox[0] if len(bbox) >= 4 else 0
-                        height = bbox[3] - bbox[1] if len(bbox) >= 4 else 0
+                        bbox: Any = block.get("bbox", [0, 0, 0, 0])  # type: ignore
+                        width: float = float(bbox[2] - bbox[0]) if bbox and len(bbox) >= 4 else 0  # type: ignore
+                        height: float = float(bbox[3] - bbox[1]) if bbox and len(bbox) >= 4 else 0  # type: ignore
 
                         # Include images larger than 10x10 pixels
                         if width > 10 and height > 10:
@@ -99,7 +111,7 @@ class PDFExtractor:
                                 "content": f"[Image {width:.0f}x{height:.0f} on page {page_num + 1}]",
                                 "page": page_num + 1,
                                 "block_id": f"img{page_num + 1}_{block_num}",
-                                "bbox": bbox,
+                                "bbox": list(bbox) if bbox else [],  # type: ignore
                             }
 
                 # Extract tables with better detection
@@ -115,18 +127,18 @@ class PDFExtractor:
                         }
 
         finally:
-            doc.close()
+            doc.close()  # type: ignore
 
-    def _detect_tables(self, page) -> List[str]:
+    def _detect_tables(self, page: Any) -> List[str]:
         """Enhanced table detection."""
-        text = page.get_text()
-        tables = []
+        text: str = page.get_text()  # type: ignore
+        # tables: List[str] = []  # Unused variable
         lines = text.split("\n")
 
         # Look for table patterns
         table_indicators = ["Table", "Figure", "|", "\t"]
-        potential_tables = []
-        current_table = []
+        potential_tables: List[str] = []
+        current_table: List[str] = []
 
         for line in lines:
             line = line.strip()

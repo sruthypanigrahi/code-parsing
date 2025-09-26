@@ -3,6 +3,7 @@
 import json
 import tempfile
 from pathlib import Path
+
 from src.models import TOCEntry
 from src.writer import JSONLWriter
 
@@ -27,7 +28,7 @@ def test_jsonl_schema_validation():
     writer.write_list(entries, temp_path)
 
     # Validate each line
-    with open(temp_path, "r", encoding="utf-8") as f:
+    with open(temp_path, encoding="utf-8") as f:
         for line in f:
             data = json.loads(line.strip())
             assert "doc_title" in data

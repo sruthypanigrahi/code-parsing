@@ -41,8 +41,7 @@ venv.bak/
 Thumbs.db
 
 # Project specific
-outputs/*.jsonl
-outputs/*.log
+outputs/
 assets/*.pdf
 *.log
 

@@ -1,15 +1,19 @@
 """PDF content extraction utilities."""
 
-from pathlib import Path
-from typing import Iterator, Optional
 import logging
+from collections.abc import Iterator
+from pathlib import Path
+from typing import Optional, Any
 
 try:
     import fitz  # type: ignore # PyMuPDF
 except ImportError as e:
     raise ImportError("PyMuPDF is required: pip install PyMuPDF") from e
 
-from .exceptions import PDFNotFoundError
+# Create PDFNotFoundError if not imported from exceptions
+class PDFNotFoundError(Exception):
+    """Raised when PDF file is not found."""
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -32,20 +36,20 @@ def extract_front_pages(pdf_path: Path, max_pages: Optional[int] = 10) -> Iterat
         raise PDFNotFoundError(f"PDF not found: {pdf_path}")
 
     try:
-        doc = fitz.open(str(pdf_path))
+        doc: Any = fitz.open(str(pdf_path))  # type: ignore
     except Exception as e:
         raise RuntimeError(f"Cannot open PDF {pdf_path}: {e}") from e
 
     try:
-        total_pages = len(doc) if max_pages is None else min(max_pages, len(doc))
+        total_pages = len(doc) if max_pages is None else min(max_pages, len(doc))  # type: ignore
         logger.debug(f"Extracting {total_pages} pages from {pdf_path}")
 
         for i in range(total_pages):
-            page = doc[i]
-            text = page.get_text("text") or ""
+            page: Any = doc[i]  # type: ignore
+            text: str = page.get_text("text") or ""  # type: ignore
             yield text
     finally:
-        doc.close()
+        doc.close()  # type: ignore
 
 
 def get_doc_title(pdf_path: Path) -> str:
@@ -64,13 +68,13 @@ def get_doc_title(pdf_path: Path) -> str:
         raise PDFNotFoundError(f"PDF not found: {pdf_path}")
 
     try:
-        doc = fitz.open(str(pdf_path))
+        doc: Any = fitz.open(str(pdf_path))  # type: ignore
         try:
-            metadata = doc.metadata
-            title = metadata.get("title")
+            metadata: Any = doc.metadata  # type: ignore
+            title: Optional[str] = metadata.get("title") if metadata else None  # type: ignore
             return title if title else "USB Power Delivery Specification"
         finally:
-            doc.close()
+            doc.close()  # type: ignore
     except Exception as e:
         logger.warning(f"Cannot read PDF metadata: {e}")
         return "USB Power Delivery Specification"

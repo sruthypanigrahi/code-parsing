@@ -9,6 +9,6 @@ from .pipeline_orchestrator import PipelineOrchestrator
 
 __all__ = [
     "Config",
-    "TOCEntry",
     "PipelineOrchestrator",
+    "TOCEntry",
 ]

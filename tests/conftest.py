@@ -1,9 +1,11 @@
 """Shared test fixtures and configuration."""
 
-import pytest
 from pathlib import Path
 from typing import List
-from src.models import TOCEntry, PageContent
+
+import pytest
+
+from src.models import PageContent, TOCEntry
 
 
 @pytest.fixture

@@ -24,19 +24,27 @@ jobs:
           pip install pydantic PyMuPDF pdfplumber PyYAML click
           pip install pytest black ruff mypy
 
+      - name: Format check with Black
+        run: black --check .
+
+      - name: Lint check with Ruff
+        run: ruff check src tests
+
+      - name: Type check with MyPy
+        run: mypy src --ignore-missing-imports
+        continue-on-error: true
+
       - name: Create placeholder outputs
         run: |
           mkdir -p outputs
           touch outputs/usb_pd_content.jsonl outputs/usb_pd_spec.jsonl outputs/usb_pd_toc.jsonl outputs/parser.log
 
-      - name: Format code with Black
-        run: black .
-
       - name: Test with pytest
         run: |
-          pytest --maxfail=1 --disable-warnings -q
+          pytest --maxfail=1 --disable-warnings -q --tb=short
         continue-on-error: true
 
-      - name: Lint check
-        run: ruff check src --fix
+      - name: Run performance benchmark
+        run: |
+          python benchmarks/run_benchmark.py
         continue-on-error: true

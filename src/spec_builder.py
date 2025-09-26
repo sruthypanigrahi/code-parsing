@@ -1,9 +1,9 @@
 """Spec file builder."""
 
-from pathlib import Path
-from typing import Dict
 import json
 import shutil
+from pathlib import Path
+from typing import Dict
 
 
 class SpecBuilder:
@@ -23,7 +23,7 @@ class SpecBuilder:
         counts = {"paragraphs": 0, "images": 0, "tables": 0, "pages": 0}
         max_page = 0
 
-        with open(spec_path, "r", encoding="utf-8") as f:
+        with open(spec_path, encoding="utf-8") as f:
             for line in f:
                 item = json.loads(line)
                 content_type = item.get("type", "")
@@ -35,8 +35,7 @@ class SpecBuilder:
                     counts["tables"] += 1
 
                 page_num = item.get("page", 0)
-                if page_num > max_page:
-                    max_page = page_num
+                max_page = max(max_page, page_num)
 
         counts["pages"] = max_page
         return counts

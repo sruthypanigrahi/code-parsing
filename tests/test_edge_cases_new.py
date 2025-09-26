@@ -1,9 +1,9 @@
 """Test edge cases for TOC parsing and validation."""
 
-import pytest
 from src.parsing_strategies import RegexTOCParser
-from src.validator import validate_iter
+
 from src.models import TOCEntry
+from src.validator import validate_iter
 
 
 class TestTOCEdgeCases:

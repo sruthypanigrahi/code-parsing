@@ -1,175 +1,474 @@
-# API Documentation
+# API Reference
+
+Complete API documentation for USB PD Specification Parser.
 
 ## Core Classes
 
-### USBPDParser
+### CLIInterface
 
-Main orchestrator class for PDF parsing pipeline.
+Main command-line interface class.
 
 ```python
-from src.app import USBPDParser
+from src.app import CLIInterface
 
-# Initialize with config file
-parser = USBPDParser("application.yml", debug=True)
-
-# Initialize with dictionary
-config = {
-    "pdf_input_file": "document.pdf",
-    "output": {"toc_file": "output.jsonl"}
-}
-parser = USBPDParser.from_dict(config)
-
-# Run parsing pipeline
-entries = parser.run()  # Returns List[TOCEntry]
+cli = CLIInterface()
+cli.run()
 ```
 
-### ContentExtractor
+#### Methods
 
-Handles PDF content extraction.
+##### `__init__()`
+Initialize CLI interface with argument parser.
+
+**Returns:** `None`
+
+##### `run()`
+Execute the CLI application with user arguments.
+
+**Returns:** `None`  
+**Raises:** `SystemExit` on error
+
+---
+
+### PipelineOrchestrator
+
+Coordinates the complete PDF processing pipeline.
 
 ```python
-from src.pipeline import ContentExtractor
+from src.pipeline_orchestrator import PipelineOrchestrator
 
-extractor = ContentExtractor(
-    pdf_path="document.pdf",
-    output_dir="outputs",
-    ocr_fallback=True,
-    max_pages=100
-)
-pages = extractor.extract()  # Returns List[PageContent]
+orchestrator = PipelineOrchestrator("config.yml", debug=True)
+results = orchestrator.run_full_pipeline(mode=1)
 ```
 
-### TOCProcessor
+#### Constructor
 
-Processes pages to extract TOC entries.
+##### `__init__(config_path: str = "application.yml", debug: bool = False)`
 
+**Parameters:**
+- `config_path` (str): Path to configuration file
+- `debug` (bool): Enable debug logging
+
+#### Methods
+
+##### `run_full_pipeline(mode: int = 1) -> Dict[str, Any]`
+Run complete pipeline with TOC and content extraction.
+
+**Parameters:**
+- `mode` (int): Extraction mode (1=all pages, 2=600 pages, 3=200 pages)
+
+**Returns:** `Dict[str, Any]` - Results with counts and file paths
+
+**Example:**
 ```python
-from src.pipeline import TOCProcessor
-
-processor = TOCProcessor("Document Title")
-entries = processor.process(pages)  # Returns List[TOCEntry]
+results = orchestrator.run_full_pipeline(mode=1)
+print(f"TOC entries: {results['toc_entries']}")
+print(f"Content items: {results['content_items']}")
 ```
 
-### Parsing Strategies
+##### `run_toc_only() -> List[TOCEntry]`
+Extract only TOC entries.
 
-Strategy pattern for different parsing approaches.
+**Returns:** `List[TOCEntry]` - List of TOC entries
 
-```python
-from src.parsing_strategies import RegexTOCParser, FuzzyTOCParser
+##### `run_content_only() -> int`
+Extract only content (paragraphs, images, tables).
 
-# Regex-based parsing (default)
-regex_parser = RegexTOCParser()
-entries = regex_parser.parse(page_tuples)
+**Returns:** `int` - Number of content items extracted
 
-# Fuzzy matching parsing
-fuzzy_parser = FuzzyTOCParser()
-entries = fuzzy_parser.parse(page_tuples)
-```
+---
 
-### StreamingJSONLWriter
+### PDFExtractor
 
-Memory-efficient writer for large documents.
+Handles PDF content extraction with different modes.
 
 ```python
-from src.streaming_writer import StreamingJSONLWriter
+from src.pdf_extractor import PDFExtractor
 from pathlib import Path
 
-# Context manager usage
-with StreamingJSONLWriter(Path("output.jsonl")) as writer:
-    for entry in entries:
-        writer.write_entry(entry)
-
-# Convenience method
-StreamingJSONLWriter.write_streaming(entries, Path("output.jsonl"))
+extractor = PDFExtractor(Path("document.pdf"))
+pages = extractor.extract_pages(max_pages=10)
 ```
+
+#### Constructor
+
+##### `__init__(pdf_path: Path)`
+
+**Parameters:**
+- `pdf_path` (Path): Path to PDF file
+
+**Raises:** `PDFNotFoundError` if file doesn't exist
+
+#### Methods
+
+##### `get_doc_title() -> str`
+Extract document title from PDF metadata.
+
+**Returns:** `str` - Document title or default
+
+##### `extract_pages(max_pages: Optional[int] = None) -> List[str]`
+Extract text from PDF pages.
+
+**Parameters:**
+- `max_pages` (Optional[int]): Maximum pages to extract (None for all)
+
+**Returns:** `List[str]` - List of page text content
+
+##### `extract_structured_content(max_pages: Optional[int] = None) -> Iterator[Dict[str, Any]]`
+Extract structured content including paragraphs, images, and tables.
+
+**Parameters:**
+- `max_pages` (Optional[int]): Maximum pages to extract
+
+**Returns:** `Iterator[Dict[str, Any]]` - Iterator of content items
+
+**Content Item Structure:**
+```python
+{
+    "type": "paragraph|image|table",
+    "content": "text content or description",
+    "page": 1,
+    "block_id": "p1_0",
+    "bbox": [x1, y1, x2, y2]
+}
+```
+
+---
+
+### TOCExtractor
+
+Handles TOC extraction from PDF content.
+
+```python
+from src.toc_extractor import TOCExtractor
+
+extractor = TOCExtractor("Document Title")
+entries = extractor.extract_from_content(content)
+```
+
+#### Constructor
+
+##### `__init__(doc_title: str)`
+
+**Parameters:**
+- `doc_title` (str): Document title for TOC entries
+
+#### Methods
+
+##### `extract_from_content(content: str) -> List[TOCEntry]`
+Extract TOC entries from text content.
+
+**Parameters:**
+- `content` (str): Text content to parse
+
+**Returns:** `List[TOCEntry]` - List of extracted TOC entries
+
+---
+
+### ContentSearcher
+
+Search functionality for JSONL content files.
+
+```python
+from search_content import ContentSearcher
+
+searcher = ContentSearcher("outputs/content.jsonl")
+matches = searcher.search("USB Power Delivery")
+searcher.display_results("USB Power Delivery")
+```
+
+#### Constructor
+
+##### `__init__(jsonl_file: str = "outputs/usb_pd_spec.jsonl")`
+
+**Parameters:**
+- `jsonl_file` (str): Path to JSONL file to search
+
+#### Methods
+
+##### `search(search_term: str) -> List[Dict[str, Any]]`
+Search for term in JSONL content.
+
+**Parameters:**
+- `search_term` (str): Text to search for
+
+**Returns:** `List[Dict[str, Any]]` - List of matching items
+
+##### `display_results(search_term: str, max_results: int = 10) -> None`
+Display search results to console.
+
+**Parameters:**
+- `search_term` (str): Search term used
+- `max_results` (int): Maximum results to display
+
+---
+
+### InputValidator
+
+Validates user inputs for security and correctness.
+
+```python
+from src.input_validator import InputValidator
+
+# Validate PDF file
+pdf_path = InputValidator.validate_pdf_path("document.pdf")
+
+# Validate search term
+clean_term = InputValidator.validate_search_term("USB<script>")
+```
+
+#### Static Methods
+
+##### `validate_pdf_path(pdf_path: Union[str, Path]) -> Path`
+Validate PDF file path and properties.
+
+**Parameters:**
+- `pdf_path` (Union[str, Path]): Path to PDF file
+
+**Returns:** `Path` - Validated path object
+
+**Raises:** 
+- `PDFNotFoundError` if file not found
+- `InvalidInputError` if file invalid
+
+##### `validate_search_term(search_term: str) -> str`
+Validate and sanitize search term.
+
+**Parameters:**
+- `search_term` (str): Search term to validate
+
+**Returns:** `str` - Sanitized search term
+
+**Raises:** `InvalidInputError` if term invalid
+
+##### `validate_page_range(start_page: int, end_page: Optional[int] = None) -> tuple`
+Validate page range parameters.
+
+**Parameters:**
+- `start_page` (int): Starting page number
+- `end_page` (Optional[int]): Ending page number
+
+**Returns:** `tuple` - Validated page range
+
+##### `sanitize_filename(filename: str) -> str`
+Sanitize filename for safe file operations.
+
+**Parameters:**
+- `filename` (str): Filename to sanitize
+
+**Returns:** `str` - Safe filename
+
+---
+
+### ProgressBar
+
+Simple progress bar for console output.
+
+```python
+from src.progress_tracker import ProgressBar
+
+with ProgressBar(100, "Processing") as pbar:
+    for i in range(100):
+        # Do work
+        pbar.update(1)
+```
+
+#### Constructor
+
+##### `__init__(total: int, description: str = "Processing", width: int = 50)`
+
+**Parameters:**
+- `total` (int): Total number of items
+- `description` (str): Progress description
+- `width` (int): Progress bar width
+
+#### Methods
+
+##### `update(increment: int = 1) -> None`
+Update progress by increment.
+
+##### `set_progress(value: int) -> None`
+Set absolute progress value.
+
+##### `finish() -> None`
+Mark progress as complete.
+
+---
+
+### AsyncProcessor
+
+Async processor for CPU and I/O bound tasks.
+
+```python
+from src.async_processor import AsyncProcessor
+import asyncio
+
+async def main():
+    with AsyncProcessor(max_workers=4) as processor:
+        results = await processor.process_batch_async(func, items)
+
+asyncio.run(main())
+```
+
+#### Constructor
+
+##### `__init__(max_workers: Optional[int] = None)`
+
+**Parameters:**
+- `max_workers` (Optional[int]): Maximum worker threads
+
+#### Methods
+
+##### `async process_batch_async(func: Callable, items: List, batch_size: int = 10) -> List`
+Process items in batches asynchronously.
+
+**Parameters:**
+- `func` (Callable): Function to apply to each item
+- `items` (List): Items to process
+- `batch_size` (int): Batch size for processing
+
+**Returns:** `List` - Processed results
+
+---
 
 ## Data Models
 
 ### TOCEntry
 
-Represents a Table of Contents entry.
+Pydantic model for Table of Contents entries.
 
 ```python
 from src.models import TOCEntry
 
 entry = TOCEntry(
-    doc_title="USB Power Delivery Specification",
-    section_id="2.1.3",
-    title="Power Requirements",
-    page=45,
-    level=3,
-    full_path="2.1.3 Power Requirements",
-    parent_id="2.1",  # Auto-inferred
+    doc_title="Document",
+    section_id="1.1",
+    title="Introduction",
+    full_path="Introduction",
+    page=15,
+    level=1,
+    parent_id=None,
     tags=[]
 )
 ```
 
-### PageContent
+#### Fields
 
-Represents extracted page content.
+- `doc_title` (str): Document title
+- `section_id` (str): Section identifier
+- `title` (str): Section title
+- `full_path` (str): Full hierarchical path
+- `page` (int): Page number
+- `level` (int): Hierarchy level
+- `parent_id` (Optional[str]): Parent section ID
+- `tags` (List[str]): Associated tags
+
+---
+
+## Exception Hierarchy
+
+### Base Exceptions
+
+- `USBPDParserError` - Base exception for all parser errors
+- `PDFProcessingError` - PDF processing failures
+- `TOCExtractionError` - TOC extraction failures
+- `ContentProcessingError` - Content processing failures
+- `ValidationError` - Data validation failures
+- `ConfigurationError` - Configuration issues
+- `PDFNotFoundError` - PDF file not found
+- `InvalidInputError` - Invalid input data
+- `ProcessingTimeoutError` - Processing timeout
+- `MemoryLimitError` - Memory limit exceeded
+- `OutputWriteError` - Output writing failure
+
+### Usage Example
 
 ```python
-from src.models import PageContent
+from src.exceptions import PDFNotFoundError, InvalidInputError
 
-page = PageContent(
-    page=1,
-    text="Page content text...",
-    image_count=2,
-    table_count=1
-)
+try:
+    extractor = PDFExtractor(Path("missing.pdf"))
+except PDFNotFoundError as e:
+    print(f"PDF not found: {e}")
+except InvalidInputError as e:
+    print(f"Invalid input: {e}")
 ```
+
+---
 
 ## Configuration
 
-### YAML Configuration
+### Configuration File Structure
 
 ```yaml
-# application.yml
-pdf_input_file: "assets/document.pdf"
+# Input PDF file path
+pdf_input_file: "assets/USB_PD_R3_2 V1.1 2024-10.pdf"
+
+# Output settings
 output_directory: "outputs"
-toc_file: "outputs/toc.jsonl"
+toc_file: "outputs/usb_pd_toc.jsonl"
+
+# Processing options
 ocr_fallback: true
-max_pages: null  # Process all pages
+max_pages: null
+
+# Parser settings
+parser:
+  min_line_length: 5
+  deduplicate: true
 ```
 
-### Programmatic Configuration
+### Config Class
 
 ```python
-config = {
-    "pdf_input_file": "document.pdf",
-    "output": {
-        "toc_file": "output.jsonl",
-        "output_directory": "outputs"
-    },
-    "extraction": {
-        "max_pages": 100,
-        "ocr_fallback": True
-    }
-}
+from src.config import Config
+
+config = Config("application.yml")
+print(config.pdf_input_file)
+print(config.output_directory)
 ```
 
-## Error Handling
+---
 
-### Custom Exceptions
+## Protocols and Interfaces
+
+### ExtractorProtocol
 
 ```python
-from src.fuzzy_parser import ToCNotFoundError
+from src.base import ExtractorProtocol
 
-try:
-    entries = parser.parse(pages)
-except ToCNotFoundError as e:
-    print(f"No TOC found: {e}")
+class MyExtractor:
+    def extract_pages(self, max_pages: Optional[int] = None) -> List[str]:
+        # Implementation
+        pass
+    
+    def get_doc_title(self) -> str:
+        # Implementation
+        pass
 ```
 
-## Validation
-
-### ValidationReport
+### ValidatorProtocol
 
 ```python
-from src.validator import Validator
+from src.base import ValidatorProtocol
 
-report = Validator.validate(entries)
-print(f"Validation passed: {report.validation_passed}")
-print(f"Duplicates: {report.duplicates}")
-print(f"Out of order: {report.out_of_order}")
+class MyValidator:
+    def validate(self) -> bool:
+        # Implementation
+        pass
+```
+
+### SearcherProtocol
+
+```python
+from src.base import SearcherProtocol
+
+class MySearcher:
+    def search(self, search_term: str) -> List[Dict[str, Any]]:
+        # Implementation
+        pass
+    
+    def display_results(self, search_term: str, max_results: int = 10) -> None:
+        # Implementation
+        pass
 ```

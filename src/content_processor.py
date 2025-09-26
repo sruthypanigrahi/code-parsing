@@ -1,8 +1,9 @@
 """Content processing class for structured data extraction."""
 
-from typing import Iterator, Dict, Any, List
 import json
+from collections.abc import Iterator
 from pathlib import Path
+from typing import Any, Dict
 
 
 class ContentProcessor:

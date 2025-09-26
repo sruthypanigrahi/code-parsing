@@ -1,7 +1,8 @@
 """Table of Contents extraction class."""
 
 import re
-from typing import List, Iterator
+from typing import List, Optional
+
 from .models import TOCEntry
 
 
@@ -21,7 +22,7 @@ class TOCExtractor:
 
     def extract_from_content(self, content: str) -> List[TOCEntry]:
         """Extract TOC entries from text content."""
-        entries = []
+        entries: List[TOCEntry] = []
         lines = content.split("\n")
         section_counter = 1
 
@@ -51,7 +52,7 @@ class TOCExtractor:
 
         return entries
 
-    def _parse_toc_line(self, line: str, section_counter: int) -> TOCEntry:
+    def _parse_toc_line(self, line: str, section_counter: int) -> Optional[TOCEntry]:
         """Parse a single TOC line into a TOCEntry."""
         # Enhanced patterns for USB PD spec
         enhanced_patterns = [
@@ -103,6 +104,6 @@ class TOCExtractor:
         dots = section_id.count(".")
         return dots + 1
 
-    def _get_existing_entries(self) -> List:
+    def _get_existing_entries(self) -> List[TOCEntry]:
         """Get existing entries count (placeholder)."""
         return []

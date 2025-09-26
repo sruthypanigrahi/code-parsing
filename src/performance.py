@@ -2,72 +2,64 @@
 
 import time
 import functools
-import logging
-from typing import Any, Callable, TypeVar
 from contextlib import contextmanager
-
-logger = logging.getLogger(__name__)
-
-F = TypeVar("F", bound=Callable[..., Any])
-
-
-def timer(func: F) -> F:
-    """Decorator to time function execution."""
-
-    @functools.wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        start = time.perf_counter()
-        result = func(*args, **kwargs)
-        end = time.perf_counter()
-        logger.info(f"{func.__name__} took {end - start:.3f}s")
-        return result
-
-    return wrapper
-
-
-@contextmanager
-def timed_operation(operation_name: str):
-    """Context manager for timing operations."""
-    start = time.perf_counter()
-    try:
-        yield
-    finally:
-        end = time.perf_counter()
-        logger.info(f"{operation_name} took {end - start:.3f}s")
+from typing import Dict, Any
+import threading
 
 
 class PerformanceMonitor:
     """Monitor performance metrics."""
-
-    def __init__(self) -> None:
-        self.metrics: dict[str, list[float]] = {}
-
-    def record(self, metric_name: str, value: float) -> None:
+    
+    def __init__(self):
+        self.metrics: Dict[str, Any] = {}
+        self._lock = threading.Lock()
+    
+    def record(self, key: str, value: Any):
         """Record a performance metric."""
-        if metric_name not in self.metrics:
-            self.metrics[metric_name] = []
-        self.metrics[metric_name].append(value)
-
-    def get_stats(self, metric_name: str) -> dict[str, float]:
-        """Get statistics for a metric."""
-        values = self.metrics.get(metric_name, [])
-        if not values:
-            return {}
-
-        return {
-            "count": len(values),
-            "total": sum(values),
-            "avg": sum(values) / len(values),
-            "min": min(values),
-            "max": max(values),
-        }
-
-    def report(self) -> None:
-        """Log performance report."""
-        for metric, stats in [(m, self.get_stats(m)) for m in self.metrics]:
-            if stats:
-                logger.info(f"{metric}: {stats}")
+        with self._lock:
+            self.metrics[key] = value
+    
+    def increment(self, key: str, value: int = 1):
+        """Increment a counter metric."""
+        with self._lock:
+            self.metrics[key] = self.metrics.get(key, 0) + value
+    
+    def report(self):
+        """Print performance report."""
+        print("\n=== Performance Report ===")
+        for key, value in self.metrics.items():
+            print(f"{key}: {value}")
 
 
-# Global performance monitor
+# Global monitor instance
 monitor = PerformanceMonitor()
+
+
+def timer(func):
+    """Decorator to time function execution."""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        duration = time.time() - start
+        monitor.record(f"{func.__name__}_duration", f"{duration:.2f}s")
+        return result
+    return wrapper
+
+
+@contextmanager
+def timed_operation(name: str):
+    """Context manager for timing operations."""
+    start = time.time()
+    try:
+        yield
+    finally:
+        duration = time.time() - start
+        monitor.record(f"{name}_duration", f"{duration:.2f}s")
+
+
+@functools.lru_cache(maxsize=128)
+def cached_metadata_parse(content_hash: str, content: str):
+    """Cache expensive metadata parsing operations."""
+    # Placeholder for expensive parsing
+    return {"length": len(content), "hash": content_hash}

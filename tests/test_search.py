@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Test the search functionality."""
 
-from src.extractor import PDFExtractor
-from src.search import TOCSearcher
 from pathlib import Path
+
+from src.search import TOCSearcher
+
+from src.extractor import PDFExtractor
 
 # Extract first 20 pages
 extractor = PDFExtractor(

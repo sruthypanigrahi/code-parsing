@@ -2,10 +2,11 @@
 
 from pathlib import Path
 from typing import List
+
+from .models import TOCEntry
 from .pdf_extractor import PDFExtractor
 from .toc_extractor import TOCExtractor
 from .writer import write_jsonl
-from .models import TOCEntry
 
 
 class TOCPipeline:

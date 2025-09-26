@@ -1,8 +1,10 @@
 """Interface definitions for better modularity."""
 
 from abc import ABC, abstractmethod
-from typing import Iterator, Protocol
+from collections.abc import Iterator
 from pathlib import Path
+from typing import Protocol
+
 from .models import TOCEntry
 
 

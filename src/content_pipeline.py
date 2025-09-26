@@ -1,18 +1,22 @@
 """Content extraction pipeline."""
 
 from pathlib import Path
-from .pdf_extractor import PDFExtractor
+from typing import Optional
+import logging
+
+from .config import Config
 from .content_processor import ContentProcessor
+from .pdf_extractor import PDFExtractor
 
 
 class ContentPipeline:
     """Handles content extraction pipeline."""
 
-    def __init__(self, config, logger):
+    def __init__(self, config: Config, logger: logging.Logger):
         self.cfg = config
         self.logger = logger
 
-    def extract_content(self, pdf_path: Path, max_pages=None) -> int:
+    def extract_content(self, pdf_path: Path, max_pages: Optional[int] = None) -> int:
         """Extract structured content from PDF."""
         pdf_extractor = PDFExtractor(pdf_path)
         doc_title = pdf_extractor.get_doc_title()

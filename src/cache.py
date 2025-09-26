@@ -2,10 +2,10 @@
 
 import hashlib
 import json
+import logging
 import pickle
 from pathlib import Path
-from typing import Any, Optional, TypeVar, Callable
-import logging
+from typing import Any, Callable, Optional, TypeVar
 
 logger = logging.getLogger(__name__)
 

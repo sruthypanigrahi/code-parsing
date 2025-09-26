@@ -1,20 +1,39 @@
 """Main pipeline orchestrator class."""
 
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any, Dict, List, Callable, TypeVar
+
 from .config import Config
-from .logger import get_logger
-from .pdf_extractor import PDFExtractor
-from .toc_pipeline import TOCPipeline
 from .content_pipeline import ContentPipeline
-from .spec_builder import SpecBuilder
-from .models import TOCEntry
-from .performance import timer, timed_operation, monitor
 from .exceptions import USBPDParserError
+from .logger import get_logger
+from .models import TOCEntry
+from .performance import monitor, timed_operation
+from typing import Callable, TypeVar
+
+F = TypeVar('F', bound=Callable[..., Any])
+
+def timer(func: F) -> F:
+    """Timer decorator with proper typing."""
+    from .performance import timer as _timer
+    return _timer(func)  # type: ignore
+from .spec_builder import SpecBuilder
+from .toc_pipeline import TOCPipeline
 
 
 class PipelineOrchestrator:
-    """Orchestrates the complete PDF processing pipeline."""
+    """
+    Orchestrates the complete PDF processing pipeline.
+
+    Args:
+        config_path: Path to configuration file (default: application.yml)
+        debug: Enable debug logging (default: False)
+
+    Methods:
+        run_full_pipeline(mode: int) -> Dict[str, Any]  # Complete pipeline
+        run_toc_only() -> List[TOCEntry]                # TOC extraction only
+        run_content_only() -> int                       # Content extraction only
+    """
 
     def __init__(self, config_path: str = "application.yml", debug: bool = False):
         self.cfg = Config(config_path)
@@ -46,7 +65,7 @@ class PipelineOrchestrator:
                 spec_counts = self.spec_builder.create_spec_file(spec_path)
 
             # Build results
-            results = {
+            results: Dict[str, Any] = {
                 "toc_entries": len(toc_entries),
                 "toc_path": str(Path(self.cfg.output_directory) / "usb_pd_toc.jsonl"),
                 "content_items": content_count,
@@ -61,7 +80,7 @@ class PipelineOrchestrator:
             monitor.record("toc_entries", len(toc_entries))
             monitor.record("content_items", content_count)
 
-            self.logger.info(f"Pipeline completed successfully")
+            self.logger.info("Pipeline completed successfully")
             self.logger.info(f"TOC entries: {len(toc_entries)}")
             self.logger.info(f"Content items: {content_count}")
             self.logger.info(f"Spec file counts: {spec_counts}")
