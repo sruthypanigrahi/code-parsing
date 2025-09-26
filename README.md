@@ -9,7 +9,7 @@
 
 A high-performance Python tool that extracts complete content from USB Power Delivery specification PDFs, including Table of Contents, paragraphs, images, and tables. Features object-oriented modular architecture with three extraction modes, comprehensive content detection, and class-based design for maintainability.
 
-## Quickstart (5 minutes)
+## ⚡ Quickstart (5 minutes)
 
 ```bash
 python -m venv .venv
@@ -18,6 +18,13 @@ python -m venv .venv
 pip install -r requirements.txt
 python main.py --mode 1
 head -n 3 outputs/usb_pd_content.jsonl
+```
+
+**Sample Output:**
+```json
+{"doc_title":"USB_PD_R3_2 V1.1 2024-10.pdf","content_id":"C1","type":"paragraph","content":"Universal Serial Bus","page":1,"block_id":"p1_0","bbox":[171.33,62.91,423.95,95.74]}
+{"doc_title":"USB_PD_R3_2 V1.1 2024-10.pdf","content_id":"C2","type":"image","content":"[Image 469x72 on page 1032]","page":1032,"block_id":"img1032_8"}
+{"doc_title":"USB_PD_R3_2 V1.1 2024-10.pdf","content_id":"C3","type":"table","content":"Table 2.1 Fixed Supply Power Ranges","page":27,"block_id":"tbl27_0"}
 ```
 
 ## 🚀 Quick Start
@@ -373,6 +380,8 @@ usb-pd-parser/
 ### 📖 **Complete Documentation Suite**
 
 - **[README.md](README.md)** - Main project overview and quick start
+- **[USAGE.md](USAGE.md)** - Detailed usage guide and API examples
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines and development setup
 - **[API Reference](docs/API.md)** - Complete API documentation with examples
 - **[Developer Guide](docs/DEVELOPER_GUIDE.md)** - Comprehensive development guide
 - **[Usage Examples](docs/EXAMPLES.md)** - Real-world usage examples and integrations
@@ -384,6 +393,8 @@ usb-pd-parser/
 
 | Document | Purpose | Audience |
 |----------|---------|----------|
+| [USAGE.md](USAGE.md) | Detailed usage guide | All Users |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guide | Contributors |
 | [API.md](docs/API.md) | Complete API reference | Developers, Integrators |
 | [DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) | Development workflows | Contributors, Maintainers |
 | [EXAMPLES.md](docs/EXAMPLES.md) | Usage examples | All Users |
