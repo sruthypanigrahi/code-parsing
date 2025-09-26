@@ -1,87 +1,65 @@
 #!/usr/bin/env python3
 """CLI entry point for USB PD Specification Parser."""
 
-import click
 import sys
-from pathlib import Path
-from src.app import USBPDParser
+import argparse
+from src.pipeline_orchestrator import PipelineOrchestrator
 
-
-@click.command()
-@click.option(
-    "--input",
-    "input_path",
-    type=click.Path(exists=True, path_type=Path),
-    help="Input PDF file path (required)"
-)
-@click.option(
-    "--out",
-    "output_path",
-    type=click.Path(path_type=Path),
-    help="Output JSONL file path"
-)
-@click.option(
-    "--config",
-    "config_path",
-    type=click.Path(exists=True, path_type=Path),
-    default="application.yml",
-    help="Configuration file path (default: application.yml)"
-)
-@click.option(
-    "--debug",
-    is_flag=True,
-    help="Enable debug logging"
-)
-@click.option(
-    "--max-pages",
-    type=int,
-    help="Maximum pages to process (default: all)"
-)
-def main(
-    input_path: Path | None,
-    output_path: Path,
-    config_path: Path,
-    debug: bool,
-    max_pages: int | None
-) -> None:
-    """USB PD Specification Parser - Extract TOC from PDF files."""
+def main():
+    parser = argparse.ArgumentParser(description="USB PD Specification Parser")
+    parser.add_argument("--config", default="application.yml", help="Configuration file")
+    parser.add_argument("--debug", action="store_true", help="Enable debug logging")
+    parser.add_argument("--toc-only", action="store_true", help="Extract only TOC entries")
+    parser.add_argument("--content-only", action="store_true", help="Extract only content")
+    parser.add_argument("--mode", type=int, choices=[1, 2, 3], 
+                       help="Extraction mode: 1=All pages, 2=600 batches, 3=200 batches")
+    
+    args = parser.parse_args()
+    
+    # Interactive mode selection if not provided
+    if not args.mode and not args.toc_only and not args.content_only:
+        print("\nChoose extraction mode:")
+        print("1. Full pipeline - Extract all pages with TOC and content (recommended)")
+        print("2. Extract in 600-page batches (balanced)")
+        print("3. Extract in 200-page batches (memory-safe)")
+        
+        while True:
+            try:
+                choice = int(input("\nEnter your choice (1, 2, or 3): "))
+                if choice in [1, 2, 3]:
+                    args.mode = choice
+                    break
+                else:
+                    print("Please enter 1, 2, or 3")
+            except ValueError:
+                print("Please enter a valid number")
+    
     try:
-        # Set debug logging if requested
-        if debug:
-            import logging
-            logging.getLogger().setLevel(logging.DEBUG)
+        orchestrator = PipelineOrchestrator(args.config, args.debug)
         
-        # Load configuration with debug flag
-        app = USBPDParser(str(config_path), debug=debug)
-        
-        # Override config with CLI arguments if provided
-        if input_path:
-            app.cfg.pdf_input_file = input_path
-        if output_path:
-            app.cfg.toc_file = output_path
-        if max_pages:
-            app.cfg.max_pages = max_pages
-        
-        # Validate required input
-        if not input_path and not app.cfg.pdf_input_file.exists():
-            click.echo("Error: Input PDF file is required. Use --input to specify the file.", err=True)
-            sys.exit(1)
-        elif input_path and not input_path.exists():
-            click.echo(f"Error: Input PDF file not found: {input_path}", err=True)
-            sys.exit(1)
-        
-        # Run the parser
-        app.run()
-        
-        click.echo(f" Processing complete! Output saved to: {app.cfg.toc_file}")
-        
+        if args.toc_only:
+            entries = orchestrator.run_toc_only()
+            print(f"\nExtracted {len(entries)} TOC entries")
+        elif args.content_only:
+            count = orchestrator.run_content_only()
+            print(f"\nExtracted {count} content items")
+        else:
+            results = orchestrator.run_full_pipeline(mode=args.mode or 1)
+            counts = results['spec_counts']
+            print(f"\nExtraction completed successfully!")
+            print(f"Total pages extracted: {counts['pages']}")
+            print(f"Paragraphs: {counts['paragraphs']}")
+            print(f"Images: {counts['images']}")
+            print(f"Tables: {counts['tables']}")
+            print(f"TOC entries: {results['toc_entries']}")
+            print(f"Files created:")
+            print(f"  - TOC: {results['toc_path']}")
+            print(f"  - Content: {results['content_path']}")
+            print(f"  - Spec: {results['spec_path']}")
+            
     except Exception as e:
-        click.echo(f" Error: {e}", err=True)
-        if debug:
-            import traceback
-            traceback.print_exc()
+        print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

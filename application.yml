@@ -12,5 +12,5 @@ toc_file: "outputs/usb_pd_spec.jsonl"
 # OCR fallback
 ocr_fallback: true
 
-# Max pages (null for all)
+# Max pages to process (null for all pages)
 max_pages: null

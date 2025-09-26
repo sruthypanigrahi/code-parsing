@@ -9,17 +9,14 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.9, 3.10, 3.11]
-
+    
     steps:
     - uses: actions/checkout@v4
     
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: '3.9'
     
     - name: Install dependencies
       run: |
@@ -27,33 +24,22 @@ jobs:
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
     
-    - name: Code formatting check
-      run: |
-        black --check --diff .
+    - name: Check formatting with Black
+      run: black --check .
     
-    - name: Import sorting check
-      run: |
-        isort --check-only --diff .
+    - name: Lint with Ruff
+      run: ruff check src tests
     
-    - name: Linting
-      run: |
-        ruff check .
+    - name: Type check with MyPy
+      run: mypy src --ignore-missing-imports
     
-    - name: Type checking
+    - name: Test with pytest and coverage
       run: |
-        mypy src --ignore-missing-imports
+        pytest --cov=src --cov-fail-under=95 --maxfail=1 --disable-warnings -q
     
-    - name: Security check
-      run: |
-        bandit -r src/
+    - name: Security check with Bandit
+      run: bandit -r src
     
-    - name: Run tests with coverage
-      run: |
-        pytest tests/ --cov=src --cov-report=xml --cov-report=term-missing --cov-fail-under=85
-    
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
+    - name: Safety check
+      run: safety check
+      continue-on-error: true

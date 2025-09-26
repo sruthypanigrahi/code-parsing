@@ -13,8 +13,8 @@ toc_file: "outputs/usb_pd_spec.jsonl"
 # Enable OCR fallback for scanned PDFs (slower but more accurate)
 ocr_fallback: true
 
-# Maximum pages to process (null for all pages)
-# Useful for testing with large PDFs
+# Maximum pages to process (null for all pages - default behavior)
+# Set to a number to limit processing for testing: max_pages: 50
 max_pages: null
 
 # Logging configuration
