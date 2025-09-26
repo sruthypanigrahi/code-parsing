@@ -63,13 +63,13 @@ def validate_iter(entries_iter: Iterator[TOCEntry]) -> Iterator[TOCEntry]:
 
 class ValidationReport:
     def __init__(self):
-        self.duplicates: List[str] = []
-        self.out_of_order: List[str] = []
-        self.duplicate_pages: List[int] = []
+        self.duplicates: list[str] = []
+        self.out_of_order: list[str] = []
+        self.duplicate_pages: list[int] = []
         self.total_entries: int = 0
         self.validation_passed: bool = True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "duplicates": self.duplicates,
             "out_of_order": self.out_of_order,
@@ -81,7 +81,7 @@ class ValidationReport:
 
 class Validator:
     @staticmethod
-    def validate(entries: List[TOCEntry]) -> ValidationReport:
+    def validate(entries: list[TOCEntry]) -> ValidationReport:
         report = ValidationReport()
         report.total_entries = len(entries)
         if not entries:
@@ -96,9 +96,9 @@ class Validator:
         return report
 
     @staticmethod
-    def _check_duplicates(entries: List[TOCEntry]) -> List[str]:
-        seen: Set[str] = set()
-        duplicates: List[str] = []
+    def _check_duplicates(entries: list[TOCEntry]) -> list[str]:
+        seen: set[str] = set()
+        duplicates: list[str] = []
         for entry in entries:
             if entry.section_id in seen:
                 duplicates.append(entry.section_id)
@@ -106,8 +106,8 @@ class Validator:
         return duplicates
 
     @staticmethod
-    def _check_order(entries: List[TOCEntry]) -> List[str]:
-        out_of_order: List[str] = []
+    def _check_order(entries: list[TOCEntry]) -> list[str]:
+        out_of_order: list[str] = []
         last_page = 0
         for entry in entries:
             if entry.page < last_page:
@@ -117,6 +117,6 @@ class Validator:
         return out_of_order
 
     @staticmethod
-    def _check_duplicate_pages(entries: List[TOCEntry]) -> List[int]:
+    def _check_duplicate_pages(entries: list[TOCEntry]) -> list[int]:
         page_counts = Counter(entry.page for entry in entries)
         return [page for page, count in page_counts.items() if count > 1]

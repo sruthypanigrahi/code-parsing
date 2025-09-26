@@ -1,21 +1,27 @@
 """Tests for factory classes."""
 
-import pytest
 from typing import Any, Dict, List
-from src.toc_extractor import TOCExtractor
+
+import pytest
+
 from src.exceptions import USBPDParserError
+from src.toc_extractor import TOCExtractor
+
 
 # Mock classes for testing
 class RegexTOCParser:
     def __init__(self, doc_title: str):
         self.doc_title = doc_title
 
+
 class FuzzyTOCParser:
     def __init__(self, doc_title: str):
         self.doc_title = doc_title
 
+
 class ConfigurationError(Exception):
     pass
+
 
 class ParserFactory:
     @staticmethod
@@ -26,9 +32,9 @@ class ParserFactory:
             return FuzzyTOCParser(doc_title)
         else:
             raise ConfigurationError(f"Unknown parser type: {parser_type}")
-    
+
     @staticmethod
-    def available_parsers() -> List[str]:
+    def available_parsers() -> list[str]:
         return ["regex", "fuzzy"]
 
 

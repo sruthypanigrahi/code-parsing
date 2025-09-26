@@ -1,7 +1,7 @@
 """Main pipeline orchestrator class."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Callable, TypeVar
+from typing import Any, Callable, TypeVar
 
 from .config import Config
 from .content_pipeline import ContentPipeline
@@ -9,16 +9,17 @@ from .exceptions import USBPDParserError
 from .logger import get_logger
 from .models import TOCEntry
 from .performance import monitor, timed_operation
-from typing import Callable, TypeVar
+from .spec_builder import SpecBuilder
+from .toc_pipeline import TOCPipeline
 
-F = TypeVar('F', bound=Callable[..., Any])
+F = TypeVar("F", bound=Callable[..., Any])
+
 
 def timer(func: F) -> F:
     """Timer decorator with proper typing."""
     from .performance import timer as _timer
+
     return _timer(func)  # type: ignore
-from .spec_builder import SpecBuilder
-from .toc_pipeline import TOCPipeline
 
 
 class PipelineOrchestrator:
@@ -43,7 +44,7 @@ class PipelineOrchestrator:
         self.spec_builder = SpecBuilder(self.cfg, self.logger)
 
     @timer
-    def run_full_pipeline(self, mode: int = 1) -> Dict[str, Any]:
+    def run_full_pipeline(self, mode: int = 1) -> dict[str, Any]:
         """Run the complete pipeline with TOC and content extraction."""
         try:
             pdf_path = Path(self.cfg.pdf_input_file)
@@ -65,7 +66,7 @@ class PipelineOrchestrator:
                 spec_counts = self.spec_builder.create_spec_file(spec_path)
 
             # Build results
-            results: Dict[str, Any] = {
+            results: dict[str, Any] = {
                 "toc_entries": len(toc_entries),
                 "toc_path": str(Path(self.cfg.output_directory) / "usb_pd_toc.jsonl"),
                 "content_items": content_count,
@@ -92,7 +93,7 @@ class PipelineOrchestrator:
             self.logger.error(f"Pipeline failed: {e}")
             raise USBPDParserError(f"Pipeline execution failed: {e}") from e
 
-    def run_toc_only(self) -> List[TOCEntry]:
+    def run_toc_only(self) -> list[TOCEntry]:
         """Extract only TOC entries."""
         try:
             pdf_path = Path(self.cfg.pdf_input_file)

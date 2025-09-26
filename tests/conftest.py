@@ -22,7 +22,7 @@ def sample_toc_entry() -> TOCEntry:
 
 
 @pytest.fixture
-def sample_toc_entries() -> List[TOCEntry]:
+def sample_toc_entries() -> list[TOCEntry]:
     """Multiple TOC entries for testing."""
     return [
         TOCEntry(

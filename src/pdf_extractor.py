@@ -5,14 +5,18 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+
 # Create PDFNotFoundError if not imported from exceptions
 class PDFNotFoundError(Exception):
     """Raised when PDF file is not found."""
+
     pass
+
 
 # Lazy import for heavy library
 def _get_fitz():
     import fitz  # type: ignore
+
     return fitz
 
 
@@ -34,14 +38,18 @@ class PDFExtractor:
             try:
                 metadata: Any = doc.metadata  # type: ignore
                 title: Optional[str] = metadata.get("title") if metadata else None  # type: ignore
-                return title if title and isinstance(title, str) else "USB Power Delivery Specification"
+                return (
+                    title
+                    if title and isinstance(title, str)
+                    else "USB Power Delivery Specification"
+                )
             finally:
                 doc.close()  # type: ignore
         except Exception as e:
             self.logger.warning(f"Cannot read PDF metadata: {e}")
             return "USB Power Delivery Specification"
 
-    def extract_pages(self, max_pages: Optional[int] = None) -> List[str]:
+    def extract_pages(self, max_pages: Optional[int] = None) -> list[str]:
         """Extract text from PDF pages."""
         try:
             fitz = _get_fitz()
@@ -53,7 +61,7 @@ class PDFExtractor:
             total_pages = len(doc) if max_pages is None else min(max_pages, len(doc))  # type: ignore
             self.logger.info(f"Extracting {total_pages} pages from {self.pdf_path}")
 
-            pages: List[str] = []
+            pages: list[str] = []
             for i in range(total_pages):
                 page: Any = doc[i]  # type: ignore
                 text: str = str(page.get_text("text") or "")  # type: ignore
@@ -65,7 +73,7 @@ class PDFExtractor:
 
     def extract_structured_content(
         self, max_pages: Optional[int] = None
-    ) -> Iterator[Dict[str, Any]]:
+    ) -> Iterator[dict[str, Any]]:
         """Extract structured content including paragraphs, images, and tables."""
         try:
             fitz = _get_fitz()
@@ -129,7 +137,7 @@ class PDFExtractor:
         finally:
             doc.close()  # type: ignore
 
-    def _detect_tables(self, page: Any) -> List[str]:
+    def _detect_tables(self, page: Any) -> list[str]:
         """Enhanced table detection."""
         text: str = page.get_text()  # type: ignore
         # tables: List[str] = []  # Unused variable
@@ -137,8 +145,8 @@ class PDFExtractor:
 
         # Look for table patterns
         table_indicators = ["Table", "Figure", "|", "\t"]
-        potential_tables: List[str] = []
-        current_table: List[str] = []
+        potential_tables: list[str] = []
+        current_table: list[str] = []
 
         for line in lines:
             line = line.strip()

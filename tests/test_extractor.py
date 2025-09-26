@@ -1,22 +1,26 @@
 """Tests for PDF extractor."""
 
 from pathlib import Path
-from unittest.mock import Mock, patch
 from typing import Any
+from unittest.mock import Mock, patch
 
 import pytest
 
 from src.extractor import extract_front_pages, get_doc_title
 
+
 # Create PDFNotFoundError if not imported from exceptions
 class PDFNotFoundError(Exception):
     """Raised when PDF file is not found."""
+
     pass
 
 
 def test_extract_front_pages_file_not_found() -> None:
     """Test extraction with non-existent file."""
-    with pytest.raises(Exception):  # Use generic Exception since PDFNotFoundError may not be available
+    with pytest.raises(
+        Exception
+    ):  # Use generic Exception since PDFNotFoundError may not be available
         list(extract_front_pages(Path("nonexistent.pdf")))
 
 
@@ -62,5 +66,7 @@ def test_get_doc_title_success(mock_fitz: Any) -> None:
 
 def test_get_doc_title_file_not_found() -> None:
     """Test title extraction with non-existent file."""
-    with pytest.raises(Exception):  # Use generic Exception since PDFNotFoundError may not be available
+    with pytest.raises(
+        Exception
+    ):  # Use generic Exception since PDFNotFoundError may not be available
         get_doc_title(Path("nonexistent.pdf"))

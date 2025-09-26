@@ -13,7 +13,7 @@ class SpecBuilder:
         self.cfg = config
         self.logger = logger
 
-    def create_spec_file(self, spec_path: Path) -> Dict[str, int]:
+    def create_spec_file(self, spec_path: Path) -> dict[str, int]:
         """Create spec file by copying content file and return counts."""
         content_path = Path(self.cfg.output_directory) / "usb_pd_content.jsonl"
 

@@ -1,21 +1,22 @@
 """Tests for parsing strategies."""
 
 from typing import Iterator, List
-from src.toc_extractor import TOCExtractor
+
 from src.models import TOCEntry
+from src.toc_extractor import TOCExtractor
+
 
 # Mock parser classes for testing
 class RegexTOCParser:
     def __init__(self, doc_title: str):
         self.doc_title = doc_title
         self.extractor = TOCExtractor(doc_title)
-    
+
     def parse_lines(self, lines: Iterator[str]) -> Iterator[TOCEntry]:
         content = "\n".join(lines)
         entries = self.extractor.extract_from_content(content)
-        for entry in entries:
-            yield entry
-    
+        yield from entries
+
     def find_toc_lines(self, pages: Iterator[str]) -> Iterator[str]:
         for page in pages:
             lines = page.split("\n")
@@ -23,16 +24,16 @@ class RegexTOCParser:
                 if "..." in line and any(char.isdigit() for char in line):
                     yield line.strip()
 
+
 class FuzzyTOCParser:
     def __init__(self, doc_title: str):
         self.doc_title = doc_title
         self.extractor = TOCExtractor(doc_title)
-    
+
     def parse_lines(self, lines: Iterator[str]) -> Iterator[TOCEntry]:
         content = "\n".join(lines)
         entries = self.extractor.extract_from_content(content)
-        for entry in entries:
-            yield entry
+        yield from entries
 
 
 class TestRegexTOCParser:
@@ -48,13 +49,13 @@ class TestRegexTOCParser:
 
         entries = list(parser.parse_lines(iter(lines)))
         assert isinstance(entries, list)
-        
+
         # Check if entries were parsed (may be empty if patterns don't match)
         if entries:
             for entry in entries:
                 assert isinstance(entry, TOCEntry)
-                assert hasattr(entry, 'title')
-                assert hasattr(entry, 'page')
+                assert hasattr(entry, "title")
+                assert hasattr(entry, "page")
                 assert isinstance(entry.page, int)
 
     def test_parse_lines_no_matches(self) -> None:
@@ -97,7 +98,7 @@ class TestFuzzyTOCParser:
         if entries:
             for entry in entries:
                 assert isinstance(entry, TOCEntry)
-                assert hasattr(entry, 'title')
+                assert hasattr(entry, "title")
 
     def test_parse_lines_skip_contents(self) -> None:
         """Test skipping contents header lines."""

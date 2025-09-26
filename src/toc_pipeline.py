@@ -16,7 +16,7 @@ class TOCPipeline:
         self.cfg = config
         self.logger = logger
 
-    def extract_toc(self, pdf_path: Path) -> List[TOCEntry]:
+    def extract_toc(self, pdf_path: Path) -> list[TOCEntry]:
         """Extract TOC entries from PDF."""
         pdf_extractor = PDFExtractor(pdf_path)
         doc_title = pdf_extractor.get_doc_title()

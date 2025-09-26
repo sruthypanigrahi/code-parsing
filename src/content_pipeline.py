@@ -1,8 +1,8 @@
 """Content extraction pipeline."""
 
+import logging
 from pathlib import Path
 from typing import Optional
-import logging
 
 from .config import Config
 from .content_processor import ContentProcessor

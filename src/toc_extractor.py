@@ -20,9 +20,9 @@ class TOCExtractor:
             r"^([A-Z][A-Za-z\s]+)\s+(\d+)$",
         ]
 
-    def extract_from_content(self, content: str) -> List[TOCEntry]:
+    def extract_from_content(self, content: str) -> list[TOCEntry]:
         """Extract TOC entries from text content."""
-        entries: List[TOCEntry] = []
+        entries: list[TOCEntry] = []
         lines = content.split("\n")
         section_counter = 1
 
@@ -104,6 +104,6 @@ class TOCExtractor:
         dots = section_id.count(".")
         return dots + 1
 
-    def _get_existing_entries(self) -> List[TOCEntry]:
+    def _get_existing_entries(self) -> list[TOCEntry]:
         """Get existing entries count (placeholder)."""
         return []

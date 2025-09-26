@@ -1,16 +1,18 @@
 """Tests for the TOC parser functionality."""
 
 from typing import List, Tuple
-from src.toc_extractor import TOCExtractor
+
 from src.models import TOCEntry
+from src.toc_extractor import TOCExtractor
+
 
 # Mock parser class for testing
 class RegexTOCParser:
     def __init__(self, doc_title: str):
         self.doc_title = doc_title
         self.extractor = TOCExtractor(doc_title)
-    
-    def parse(self, pages: List[Tuple[int, str]]) -> List[TOCEntry]:
+
+    def parse(self, pages: list[tuple[int, str]]) -> list[TOCEntry]:
         # Combine all page content
         content = "\n".join(page_content for _, page_content in pages)
         return self.extractor.extract_from_content(content)
@@ -31,7 +33,10 @@ def test_simple_toc_parsing() -> None:
     assert isinstance(entries, list)
     # Should find at least one valid entry if TOC patterns match
     if entries:
-        assert any("Introduction" in entry.title or "Overview" in entry.title for entry in entries)
+        assert any(
+            "Introduction" in entry.title or "Overview" in entry.title
+            for entry in entries
+        )
 
 
 def test_hierarchical_parsing() -> None:
@@ -48,8 +53,8 @@ def test_hierarchical_parsing() -> None:
     if entries:
         # Check that entries have proper structure
         for entry in entries:
-            assert hasattr(entry, 'title')
-            assert hasattr(entry, 'page')
+            assert hasattr(entry, "title")
+            assert hasattr(entry, "page")
             assert isinstance(entry.page, int)
 
 
@@ -79,7 +84,7 @@ def test_toc_extractor_direct() -> None:
     extractor = TOCExtractor("Test Document")
     content = "Table of Contents\n1.1 Introduction ... 15\n2.1 Methods ... 25"
     entries = extractor.extract_from_content(content)
-    
+
     assert isinstance(entries, list)
     if entries:
         assert all(isinstance(entry, TOCEntry) for entry in entries)

@@ -13,8 +13,8 @@ class ContentProcessor:
         self.doc_title = doc_title
 
     def process_structured_content(
-        self, content_iterator: Iterator[Dict[str, Any]]
-    ) -> Iterator[Dict[str, Any]]:
+        self, content_iterator: Iterator[dict[str, Any]]
+    ) -> Iterator[dict[str, Any]]:
         """Process structured content and format for JSONL output."""
         content_id = 1
 
@@ -37,7 +37,7 @@ class ContentProcessor:
             yield processed_item
 
     def save_content(
-        self, content_iterator: Iterator[Dict[str, Any]], output_path: Path
+        self, content_iterator: Iterator[dict[str, Any]], output_path: Path
     ) -> int:
         """Save processed content to JSONL file."""
         output_path.parent.mkdir(parents=True, exist_ok=True)

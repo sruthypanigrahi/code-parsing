@@ -9,7 +9,7 @@ class Config:
         self.config_path = Path(config_path)
         self._config = self._load_config()
 
-    def _load_config(self) -> Dict[str, Any]:
+    def _load_config(self) -> dict[str, Any]:
         if not self.config_path.exists():
             raise FileNotFoundError(f"Config file not found: {self.config_path}")
         try:

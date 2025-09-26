@@ -3,17 +3,20 @@
 import logging
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Optional, Any
+from typing import Any, Optional
 
 try:
     import fitz  # type: ignore # PyMuPDF
 except ImportError as e:
     raise ImportError("PyMuPDF is required: pip install PyMuPDF") from e
 
+
 # Create PDFNotFoundError if not imported from exceptions
 class PDFNotFoundError(Exception):
     """Raised when PDF file is not found."""
+
     pass
+
 
 logger = logging.getLogger(__name__)
 

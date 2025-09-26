@@ -1,29 +1,29 @@
 """Performance monitoring and optimization utilities."""
 
-import time
 import functools
-from contextlib import contextmanager
-from typing import Dict, Any
 import threading
+import time
+from contextlib import contextmanager
+from typing import Any, Dict
 
 
 class PerformanceMonitor:
     """Monitor performance metrics."""
-    
+
     def __init__(self):
-        self.metrics: Dict[str, Any] = {}
+        self.metrics: dict[str, Any] = {}
         self._lock = threading.Lock()
-    
+
     def record(self, key: str, value: Any):
         """Record a performance metric."""
         with self._lock:
             self.metrics[key] = value
-    
+
     def increment(self, key: str, value: int = 1):
         """Increment a counter metric."""
         with self._lock:
             self.metrics[key] = self.metrics.get(key, 0) + value
-    
+
     def report(self):
         """Print performance report."""
         print("\n=== Performance Report ===")
@@ -37,6 +37,7 @@ monitor = PerformanceMonitor()
 
 def timer(func):
     """Decorator to time function execution."""
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         start = time.time()
@@ -44,6 +45,7 @@ def timer(func):
         duration = time.time() - start
         monitor.record(f"{func.__name__}_duration", f"{duration:.2f}s")
         return result
+
     return wrapper
 
 
