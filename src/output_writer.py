@@ -35,7 +35,7 @@ class JSONLWriter(BaseWriter):  # Inheritance: extends BaseWriter
         """Write data to JSONL file."""
         with open(self._output_path, "w", encoding="utf-8") as f:
             if isinstance(data, list):
-                self._write_list(f, list(data))  # Explicit cast to List[Any]
+                self._write_list(f, data)
             else:
                 self._write_single(f, data)
     

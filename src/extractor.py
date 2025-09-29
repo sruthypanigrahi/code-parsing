@@ -35,8 +35,9 @@ class FrontPageExtractor(BaseExtractor):  # Inheritance
             raise RuntimeError(f"Cannot open PDF: {e}") from e
         
         try:
-            total_pages = (len(doc) if max_pages is None 
-                          else min(max_pages, len(doc)))
+            doc_length: int = len(doc)  # type: ignore
+            total_pages = (doc_length if max_pages is None 
+                          else min(max_pages, doc_length))
             for i in range(total_pages):
                 yield str(doc[i].get_text("text") or "")  # type: ignore
         finally:
@@ -50,10 +51,9 @@ class TitleExtractor(BaseExtractor):  # Inheritance
         try:
             doc: Any = fitz.open(str(self._pdf_path))  # type: ignore
             try:
-                metadata: Any = doc.metadata  # type: ignore
-                title: Optional[str] = (metadata.get("title") 
-                                       if metadata else None)
-                return title or "USB Power Delivery Specification"
+                metadata = doc.metadata  # type: ignore
+                title = metadata.get("title") if metadata else None  # type: ignore
+                return title if isinstance(title, str) else "USB Power Delivery Specification"
             finally:
                 doc.close()  # type: ignore
         except Exception as e:
