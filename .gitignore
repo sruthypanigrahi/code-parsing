@@ -43,7 +43,7 @@ Thumbs.db
 # Project specific
 # outputs/
 # assets/*.pdf
-*.log
+# *.log
 
 # Testing
 .coverage
