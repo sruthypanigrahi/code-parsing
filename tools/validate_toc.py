@@ -4,7 +4,7 @@
 import json
 import sys
 from pathlib import Path
-from typing import Dict, Any, Set
+from typing import Any, Dict, Set
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -67,7 +67,7 @@ class TOCValidator:
         if not self._validate_file_exists():
             return False
 
-        with open(self.file_path, "r", encoding="utf-8") as f:
+        with open(self.file_path, encoding="utf-8") as f:
             for line_num, line in enumerate(f, 1):
                 if self._validate_line(line, line_num):
                     self.valid_count += 1

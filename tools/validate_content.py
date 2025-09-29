@@ -3,9 +3,10 @@
 
 import json
 import sys
-from pathlib import Path
 from collections import Counter
-from typing import Dict, Any, Set
+from pathlib import Path
+from typing import Any, Dict, Set
+
 from ..base import BaseValidator
 
 

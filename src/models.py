@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
@@ -78,3 +78,20 @@ class TOCEntry(BaseModel):
             return str(v)
         section_id = str(info.data.get("section_id", ""))
         return None if "." not in section_id else ".".join(section_id.split(".")[:-1])
+
+
+class ContentItem(BaseModel):
+    """Represents a content item extracted from PDF (paragraph, image, table)."""
+
+    doc_title: str = Field(description="Document title")
+    content_id: str = Field(description="Unique content identifier")
+    type: str = Field(description="Content type: paragraph, image, table")
+    content: str = Field(description="Content text or description")
+    page: int = Field(gt=0, description="Page number")
+    block_id: str = Field(description="Block identifier")
+    bbox: List[float] = Field(
+        default_factory=list, description="Bounding box coordinates"
+    )
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata"
+    )

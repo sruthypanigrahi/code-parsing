@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Search content in extracted JSONL files."""
 
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 
 class ContentSearcher:
@@ -21,7 +20,7 @@ class ContentSearcher:
             raise FileNotFoundError(f"File not found: {self.file_path}")
 
         self.matches = []
-        with open(self.file_path, "r", encoding="utf-8") as f:
+        with open(self.file_path, encoding="utf-8") as f:
             for line_num, line in enumerate(f, 1):
                 if self._process_line(line, line_num, search_term):
                     continue

@@ -1,6 +1,7 @@
-from src.pdf_extractor import PDFExtractor
 from pathlib import Path
 from typing import List
+
+from src.pdf_extractor import PDFExtractor
 
 try:
     pdf_path = Path("assets/USB_PD_R3_2 V1.1 2024-10.pdf")

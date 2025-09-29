@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Debug script to check page content."""
 
-from src.pdf_extractor import PDFExtractor
 from pathlib import Path
 from typing import List
+
+from src.pdf_extractor import PDFExtractor
 
 
 def debug_pages() -> None:

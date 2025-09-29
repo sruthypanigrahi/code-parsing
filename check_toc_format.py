@@ -3,6 +3,7 @@
 
 from pathlib import Path
 from typing import List
+
 from src.pdf_extractor import PDFExtractor
 
 

@@ -86,64 +86,99 @@ class PDFExtractor:
 
             for page_num in range(total_pages):
                 page: Any = doc[page_num]  # type: ignore
-
-                # Extract text blocks (paragraphs)
-                blocks = page.get_text("dict")["blocks"]  # type: ignore
-
-                for block_num, block in enumerate(blocks):  # type: ignore
-                    if "lines" in block:  # Text block
-                        text_content: str = ""
-                        for line in block["lines"]:  # type: ignore
-                            for span in line["spans"]:  # type: ignore
-                                text_content += str(span["text"])  # type: ignore
-
-                        if text_content.strip():
-                            yield {
-                                "type": "paragraph",
-                                "content": text_content.strip(),
-                                "page": page_num + 1,
-                                "block_id": f"p{page_num + 1}_{block_num}",
-                                "bbox": list(block.get("bbox", [])),  # type: ignore
-                            }
-
-                    elif "image" in block:  # Image block
-                        # Filter out very small images (likely icons/decorations)
-                        bbox: Any = block.get("bbox", [0, 0, 0, 0])  # type: ignore
-                        width: float = float(bbox[2] - bbox[0]) if bbox and len(bbox) >= 4 else 0  # type: ignore
-                        height: float = float(bbox[3] - bbox[1]) if bbox and len(bbox) >= 4 else 0  # type: ignore
-
-                        # Include images larger than 10x10 pixels
-                        if width > 10 and height > 10:
-                            yield {
-                                "type": "image",
-                                "content": f"[Image {width:.0f}x{height:.0f} on page {page_num + 1}]",
-                                "page": page_num + 1,
-                                "block_id": f"img{page_num + 1}_{block_num}",
-                                "bbox": list(bbox) if bbox else [],  # type: ignore
-                            }
-
-                # Extract tables with better detection
-                tables = self._detect_tables(page)
-                for table_num, table in enumerate(tables):
-                    if len(table.strip()) > 100:  # Only include substantial tables
-                        yield {
-                            "type": "table",
-                            "content": table,
-                            "page": page_num + 1,
-                            "block_id": f"tbl{page_num + 1}_{table_num}",
-                            "bbox": [],
-                        }
+                yield from self._extract_page_content(page, page_num)
 
         finally:
             doc.close()  # type: ignore
 
+    def _extract_page_content(
+        self, page: Any, page_num: int
+    ) -> Iterator[dict[str, Any]]:
+        """Extract content from a single page."""
+        # Extract text blocks
+        yield from self._extract_text_blocks(page, page_num)
+
+        # Extract images
+        yield from self._extract_images(page, page_num)
+
+        # Extract tables
+        yield from self._extract_tables(page, page_num)
+
+    def _extract_text_blocks(
+        self, page: Any, page_num: int
+    ) -> Iterator[dict[str, Any]]:
+        """Extract text blocks from page."""
+        blocks = page.get_text("dict")["blocks"]  # type: ignore
+
+        for block_num, block in enumerate(blocks):  # type: ignore
+            if "lines" not in block:
+                continue
+
+            text_content = self._extract_block_text(block)
+            if text_content.strip():
+                yield {
+                    "type": "paragraph",
+                    "content": text_content.strip(),
+                    "page": page_num + 1,
+                    "block_id": f"p{page_num + 1}_{block_num}",
+                    "bbox": list(block.get("bbox", [])),  # type: ignore
+                }
+
+    def _extract_block_text(self, block: dict) -> str:
+        """Extract text from a text block."""
+        text_content = ""
+        for line in block["lines"]:  # type: ignore
+            for span in line["spans"]:  # type: ignore
+                text_content += str(span["text"])  # type: ignore
+        return text_content
+
+    def _extract_images(self, page: Any, page_num: int) -> Iterator[dict[str, Any]]:
+        """Extract images from page."""
+        blocks = page.get_text("dict")["blocks"]  # type: ignore
+
+        for block_num, block in enumerate(blocks):  # type: ignore
+            if "image" not in block:
+                continue
+
+            bbox: Any = block.get("bbox", [0, 0, 0, 0])  # type: ignore
+            width, height = self._get_image_dimensions(bbox)
+
+            # Include images larger than 10x10 pixels
+            if width > 10 and height > 10:
+                yield {
+                    "type": "image",
+                    "content": f"[Image {width:.0f}x{height:.0f} on page {page_num + 1}]",
+                    "page": page_num + 1,
+                    "block_id": f"img{page_num + 1}_{block_num}",
+                    "bbox": list(bbox) if bbox else [],  # type: ignore
+                }
+
+    def _get_image_dimensions(self, bbox: Any) -> tuple[float, float]:
+        """Get image width and height from bounding box."""
+        if not bbox or len(bbox) < 4:
+            return 0.0, 0.0
+        width = float(bbox[2] - bbox[0])
+        height = float(bbox[3] - bbox[1])
+        return width, height
+
+    def _extract_tables(self, page: Any, page_num: int) -> Iterator[dict[str, Any]]:
+        """Extract tables from page."""
+        tables = self._detect_tables(page)
+        for table_num, table in enumerate(tables):
+            if len(table.strip()) > 100:  # Only include substantial tables
+                yield {
+                    "type": "table",
+                    "content": table,
+                    "page": page_num + 1,
+                    "block_id": f"tbl{page_num + 1}_{table_num}",
+                    "bbox": [],
+                }
+
     def _detect_tables(self, page: Any) -> list[str]:
         """Enhanced table detection."""
         text: str = page.get_text()  # type: ignore
-        # tables: List[str] = []  # Unused variable
         lines = text.split("\n")
 
-        # Look for table patterns
         table_indicators = ["Table", "Figure", "|", "\t"]
         potential_tables: list[str] = []
         current_table: list[str] = []
@@ -156,13 +191,7 @@ class PDFExtractor:
                 current_table = []
                 continue
 
-            # Check for table-like content
-            if (
-                any(indicator in line for indicator in table_indicators)
-                or line.count("  ") >= 3  # Multiple spaces
-                or line.count("\t") >= 2  # Tab characters
-                or (len(line) > 30 and line.count(" ") > 10)
-            ):  # Long lines with many spaces
+            if self._is_table_line(line, table_indicators):
                 current_table.append(line)
             else:
                 if len(current_table) >= 3:
@@ -174,3 +203,12 @@ class PDFExtractor:
             potential_tables.append("\n".join(current_table))
 
         return potential_tables
+
+    def _is_table_line(self, line: str, indicators: list[str]) -> bool:
+        """Check if line looks like part of a table."""
+        return (
+            any(indicator in line for indicator in indicators)
+            or line.count("  ") >= 3  # Multiple spaces
+            or line.count("\t") >= 2  # Tab characters
+            or (len(line) > 30 and line.count(" ") > 10)  # Long lines with many spaces
+        )

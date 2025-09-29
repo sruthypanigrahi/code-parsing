@@ -67,23 +67,16 @@ class CLIInterface:
         print(f"  - TOC: {results['toc_path']}")
         print(f"  - Spec: {results['spec_path']}")
 
-    def run(self) -> None:
-        """Run the CLI application."""
-        args = self.parser.parse_args()
-
-        # Validate configuration file if provided
+    def setup(self, args) -> None:
+        """Setup - validate config and resolve mode."""
         if args.config != "application.yml":
-            try:
-                InputValidator.validate_config_path(args.config)
-            except Exception as e:
-                print(f"Configuration error: {e}", file=sys.stderr)
-                sys.exit(1)
+            InputValidator.validate_config_path(args.config)
 
-        # Interactive mode selection if not provided
         if not args.mode and not args.toc_only and not args.content_only:
             args.mode = self._get_interactive_mode()
 
-        # Set up progress tracking
+    def process_file(self, args) -> None:
+        """Process the PDF file."""
         if args.toc_only:
             steps = ["Initialize", "Extract TOC", "Save Results"]
         elif args.content_only:
@@ -99,30 +92,41 @@ class CLIInterface:
 
         tracker = StepTracker(steps, "USB PD Parser")
 
+        tracker.next_step("Initializing pipeline...")
+        self.orchestrator = PipelineOrchestrator(args.config, args.debug)
+
+        if args.toc_only:
+            tracker.next_step("Extracting TOC entries...")
+            entries = self.orchestrator.run_toc_only()
+            tracker.next_step("Saving results...")
+            print(f"\nExtracted {len(entries)} TOC entries")
+        elif args.content_only:
+            tracker.next_step("Extracting content...")
+            count = self.orchestrator.run_content_only()
+            tracker.next_step("Saving results...")
+            print(f"\nExtracted {count} content items")
+        else:
+            tracker.next_step("Extracting TOC...")
+            tracker.next_step("Extracting content...")
+            tracker.next_step("Building specification...")
+            results = self.orchestrator.run_full_pipeline(mode=args.mode or 1)
+            tracker.next_step("Saving results...")
+            self._display_results(results)
+
+        tracker.finish()
+
+    def teardown(self) -> None:
+        """Cleanup resources."""
+        pass
+
+    def run(self) -> None:
+        """Run the CLI application."""
+        args = self.parser.parse_args()
+
         try:
-            tracker.next_step("Initializing pipeline...")
-            self.orchestrator = PipelineOrchestrator(args.config, args.debug)
-
-            if args.toc_only:
-                tracker.next_step("Extracting TOC entries...")
-                entries = self.orchestrator.run_toc_only()
-                tracker.next_step("Saving results...")
-                print(f"\nExtracted {len(entries)} TOC entries")
-            elif args.content_only:
-                tracker.next_step("Extracting content...")
-                count = self.orchestrator.run_content_only()
-                tracker.next_step("Saving results...")
-                print(f"\nExtracted {count} content items")
-            else:
-                tracker.next_step("Extracting TOC...")
-                tracker.next_step("Extracting content...")
-                tracker.next_step("Building specification...")
-                results = self.orchestrator.run_full_pipeline(mode=args.mode or 1)
-                tracker.next_step("Saving results...")
-                self._display_results(results)
-
-            tracker.finish()
-
+            self.setup(args)
+            self.process_file(args)
+            self.teardown()
         except Exception as e:
             print(f"\nError: {e}", file=sys.stderr)
             sys.exit(1)
