@@ -28,9 +28,9 @@ class ContentPipeline:
             content_iterator
         )
 
-        # Save content
-        content_path = Path(self.cfg.output_directory) / "usb_pd_content.jsonl"
-        content_count = content_processor.save_content(processed_content, content_path)
+        # Save content directly to spec file
+        spec_path = Path(self.cfg.output_directory) / "usb_pd_spec.jsonl"
+        content_count = content_processor.save_content(processed_content, spec_path)
 
-        self.logger.info(f"Extracted {content_count} content items to {content_path}")
+        self.logger.info(f"Extracted {content_count} content items to {spec_path}")
         return content_count

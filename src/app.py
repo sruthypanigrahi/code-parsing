@@ -1,6 +1,6 @@
 import argparse
 import sys
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from src.input_validator import InputValidator
 from src.pipeline_orchestrator import PipelineOrchestrator
@@ -65,7 +65,6 @@ class CLIInterface:
         print(f"TOC entries: {results['toc_entries']}")
         print("Files created:")
         print(f"  - TOC: {results['toc_path']}")
-        print(f"  - Content: {results['content_path']}")
         print(f"  - Spec: {results['spec_path']}")
 
     def run(self) -> None:

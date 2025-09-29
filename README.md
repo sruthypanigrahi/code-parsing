@@ -44,9 +44,9 @@ python main.py --mode 1
 
 # View results
 # Windows:
-type outputs\usb_pd_content.jsonl | findstr /n "^" | findstr "1: 2: 3:"
+type outputs\usb_pd_spec.jsonl | findstr /n "^" | findstr "1: 2: 3:"
 # Linux/macOS:
-head -n 3 outputs/usb_pd_content.jsonl
+head -n 3 outputs/usb_pd_spec.jsonl
 ```
 
 **Sample Output:**
@@ -94,7 +94,7 @@ python main.py --content-only
 
 # Search extracted content
 python search_content.py "USB"
-python search_content.py "Power Delivery" outputs/usb_pd_content.jsonl
+python search_content.py "Power Delivery" outputs/usb_pd_spec.jsonl
 
 # Run tests
 pytest -q
@@ -200,14 +200,12 @@ Tables: 911
 TOC entries: 149
 Files created:
   - TOC: outputs\usb_pd_toc.jsonl
-  - Content: outputs\usb_pd_content.jsonl
   - Spec: outputs\usb_pd_spec.jsonl
 ```
 
 **Output Files:**
 - `outputs/usb_pd_toc.jsonl` - Table of Contents entries (149 items)
-- `outputs/usb_pd_content.jsonl` - All content items (26,691 items)
-- `outputs/usb_pd_spec.jsonl` - Complete specification (all content)
+- `outputs/usb_pd_spec.jsonl` - Complete specification (26,691 items)
 
 ### Step 5: Search Content
 
@@ -218,7 +216,7 @@ python search_content.py "voltage"       # Found 820 matches
 python search_content.py "Power Delivery" # Found 1,259 matches
 
 # Search in specific file
-python search_content.py "connector" outputs/usb_pd_content.jsonl
+python search_content.py "connector" outputs/usb_pd_spec.jsonl
 ```
 
 ### Step 6: Troubleshooting
@@ -260,13 +258,13 @@ python search_content.py "connector" outputs/usb_pd_content.jsonl
 - **Images**: 196
 - **Tables**: 911
 
-**Sample TOC Output** ([`usb_pd_toc.jsonl`](outputs/usb_pd_toc.jsonl)):
+**Sample TOC Output** ([`sample_usb_pd_toc.jsonl`](outputs/sample_usb_pd_toc.jsonl)):
 ```json
 {"doc_title":"USB_PD_R3_2_V1.1_2024-10.pdf","section_id":"S1","title":"Overview","full_path":"Overview","page":34,"level":1,"parent_id":null,"tags":[]}
 {"doc_title":"USB_PD_R3_2_V1.1_2024-10.pdf","section_id":"S2","title":"Purpose","full_path":"Purpose","page":35,"level":1,"parent_id":null,"tags":[]}
 ```
 
-**Sample Content Output** ([`usb_pd_content.jsonl`](outputs/usb_pd_content.jsonl)):
+**Sample Content Output** ([`sample_usb_pd_spec.jsonl`](outputs/sample_usb_pd_spec.jsonl)):
 ```json
 {"doc_title":"USB_PD_R3_2_V1.1_2024-10.pdf","content_id":"C1","type":"paragraph","content":"Universal Serial Bus","page":1,"block_id":"p1_0","bbox":[171.33,62.91,423.95,95.74],"metadata":{"extracted_at":"2025-09-27T01:28:59.335084","content_length":20}}
 {"doc_title":"USB_PD_R3_2_V1.1_2024-10.pdf","content_id":"C2","type":"image","content":"[Image 469x72 on page 1032]","page":1032,"block_id":"img1032_8","bbox":[71.74,260.98,540.26,332.54],"metadata":{"extracted_at":"2025-09-27T01:28:59.335084","content_length":27}}
@@ -327,7 +325,7 @@ python main.py --toc-only
 
 # Extract only content (paragraphs, images, tables)
 python main.py --content-only
-# Output: outputs/usb_pd_content.jsonl
+# Output: outputs/usb_pd_spec.jsonl
 
 # Enable debug logging
 python main.py --debug --mode 1
@@ -441,10 +439,11 @@ code-parsing/
 │   ├── USB_PD_R3_2_V1.1_2024-10.pdf  # Sample PDF (place here)
 │   └── sample.pdf            # PDF placeholder
 ├── outputs/                   # Generated output files
-│   ├── usb_pd_toc.jsonl     # Table of Contents (149 entries)
-│   ├── usb_pd_content.jsonl # All content (26,691 items)
-│   ├── usb_pd_spec.jsonl    # Complete specification
-│   └── parser.log            # Execution logs
+│   ├── usb_pd_toc.jsonl        # Table of Contents (149 entries)
+│   ├── usb_pd_spec.jsonl       # Complete specification (26,691 items)
+│   ├── sample_usb_pd_toc.jsonl # Sample TOC entries
+│   ├── sample_usb_pd_spec.jsonl # Sample content entries
+│   └── parser.log              # Execution logs
 ├── main.py                    # CLI entry point
 ├── search_content.py          # Content search utility
 ├── check_toc_format.py        # TOC format checker
@@ -563,9 +562,9 @@ python search_content.py "USB"
 
 **Sample PDF**: Place your USB PD specification PDF in `assets/` directory
 **Sample Outputs**: 
-- [TOC Sample](outputs/usb_pd_toc.jsonl) - 149 entries
-- [Content Sample](outputs/usb_pd_content.jsonl) - 26,691 items
-- [Complete Spec](outputs/usb_pd_spec.jsonl) - All content
+- [TOC Sample](outputs/sample_usb_pd_toc.jsonl) - Sample TOC entries format
+- [Content Sample](outputs/sample_usb_pd_spec.jsonl) - Sample content format
+- **Full outputs generated when you run**: `python main.py --mode 1`
 
 ## 🎯 Object-Oriented Architecture
 
