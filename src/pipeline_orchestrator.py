@@ -1,112 +1,73 @@
-"""Main pipeline orchestrator class."""
+"""Minimal pipeline orchestrator."""
 
+import logging
 from pathlib import Path
-from typing import Any, Callable, TypeVar
+from typing import Any
 
 from .config import Config
-from .content_pipeline import ContentPipeline
-from .exceptions import USBPDParserError
-from .logger import get_logger
 from .models import TOCEntry
-from .performance import monitor, timed_operation
-from .spec_builder import SpecBuilder
-from .toc_pipeline import TOCPipeline
-
-F = TypeVar("F", bound=Callable[..., Any])
-
-
-def timer(func: F) -> F:
-    """Timer decorator with proper typing."""
-    from .performance import timer as _timer
-
-    return _timer(func)  # type: ignore
+from .pdf_extractor import PDFExtractor
+from .toc_extractor import TOCExtractor
+from .output_writer import JSONLWriter
 
 
 class PipelineOrchestrator:
-    """
-    Orchestrates the complete PDF processing pipeline.
-
-    Args:
-        config_path: Path to configuration file (default: application.yml)
-        debug: Enable debug logging (default: False)
-
-    Methods:
-        run_full_pipeline(mode: int) -> Dict[str, Any]  # Complete pipeline
-        run_toc_only() -> List[TOCEntry]                # TOC extraction only
-        run_content_only() -> int                       # Content extraction only
-    """
-
+    """Simple pipeline orchestrator for PDF processing."""
+    
     def __init__(self, config_path: str = "application.yml", debug: bool = False):
         self.cfg = Config(config_path)
-        self.logger = get_logger(output_dir=self.cfg.output_directory, debug=debug)
-        self.toc_pipeline = TOCPipeline(self.cfg, self.logger)
-        self.content_pipeline = ContentPipeline(self.cfg, self.logger)
-        self.spec_builder = SpecBuilder(self.cfg, self.logger)
-
-    @timer
+        self.logger = logging.getLogger(__name__)
+        if debug:
+            logging.basicConfig(level=logging.DEBUG)
+        
+        # Ensure output directory exists
+        self.cfg.output_directory.mkdir(exist_ok=True)
+    
     def run_full_pipeline(self, mode: int = 1) -> dict[str, Any]:
-        """Run the complete pipeline with TOC and content extraction."""
-        try:
-            pdf_path = Path(self.cfg.pdf_input_file)
-            max_pages = None if mode == 1 else (600 if mode == 2 else 200)
-
-            # Extract TOC
-            with timed_operation("TOC extraction"):
-                toc_entries = self.toc_pipeline.extract_toc(pdf_path)
-
-            # Extract content
-            with timed_operation("Content extraction"):
-                content_count = self.content_pipeline.extract_content(
-                    pdf_path, max_pages
-                )
-
-            # Create spec file
-            with timed_operation("Creating spec file"):
-                spec_path = Path(self.cfg.output_directory) / "usb_pd_spec.jsonl"
-                spec_counts = self.spec_builder.create_spec_file(spec_path)
-
-            # Build results
-            results: dict[str, Any] = {
-                "toc_entries": len(toc_entries),
-                "toc_path": str(Path(self.cfg.output_directory) / "usb_pd_toc.jsonl"),
-                "content_items": content_count,
-                "content_path": str(
-                    Path(self.cfg.output_directory) / "usb_pd_content.jsonl"
-                ),
-                "spec_path": str(spec_path),
-                "spec_counts": spec_counts,
-            }
-
-            # Record metrics
-            monitor.record("toc_entries", len(toc_entries))
-            monitor.record("content_items", content_count)
-
-            self.logger.info("Pipeline completed successfully")
-            self.logger.info(f"TOC entries: {len(toc_entries)}")
-            self.logger.info(f"Content items: {content_count}")
-            self.logger.info(f"Spec file counts: {spec_counts}")
-            monitor.report()
-
-            return results
-
-        except Exception as e:
-            self.logger.error(f"Pipeline failed: {e}")
-            raise USBPDParserError(f"Pipeline execution failed: {e}") from e
-
+        """Run complete pipeline."""
+        pdf_path = self.cfg.pdf_input_file
+        max_pages = None if mode == 1 else (600 if mode == 2 else 200)
+        
+        # Extract TOC
+        toc_extractor = TOCExtractor()
+        toc_entries = toc_extractor.extract_toc(pdf_path)
+        
+        # Save TOC
+        toc_path = self.cfg.output_directory / "usb_pd_toc.jsonl"
+        toc_writer = JSONLWriter(toc_path)
+        toc_writer.write_entries(toc_entries)
+        
+        # Extract content
+        pdf_extractor = PDFExtractor()
+        content_items = pdf_extractor.extract_content(pdf_path, max_pages)
+        
+        # Save content
+        spec_path = self.cfg.output_directory / "usb_pd_spec.jsonl"
+        content_writer = JSONLWriter(spec_path)
+        content_writer.write_content(content_items)
+        
+        # Count content types
+        counts = {
+            "pages": max_pages or len(set(item.get("page", 0) for item in content_items)),
+            "paragraphs": sum(1 for item in content_items if item.get("type") == "paragraph"),
+            "images": sum(1 for item in content_items if item.get("type") == "image"),
+            "tables": sum(1 for item in content_items if item.get("type") == "table"),
+        }
+        
+        return {
+            "toc_entries": len(toc_entries),
+            "toc_path": str(toc_path),
+            "spec_path": str(spec_path),
+            "spec_counts": counts,
+        }
+    
     def run_toc_only(self) -> list[TOCEntry]:
-        """Extract only TOC entries."""
-        try:
-            pdf_path = Path(self.cfg.pdf_input_file)
-            return self.toc_pipeline.extract_toc(pdf_path)
-        except Exception as e:
-            self.logger.error(f"TOC extraction failed: {e}")
-            raise USBPDParserError(f"TOC extraction failed: {e}") from e
-
+        """Extract only TOC."""
+        toc_extractor = TOCExtractor()
+        return toc_extractor.extract_toc(self.cfg.pdf_input_file)
+    
     def run_content_only(self) -> int:
-        """Extract only content (paragraphs, images, tables)."""
-        try:
-            pdf_path = Path(self.cfg.pdf_input_file)
-            return self.content_pipeline.extract_content(pdf_path)
-        except Exception as e:
-            self.logger.error(f"Content extraction failed: {e}")
-            raise USBPDParserError(f"Content extraction failed: {e}") from e
+        """Extract only content."""
+        pdf_extractor = PDFExtractor()
+        content_items = pdf_extractor.extract_content(self.cfg.pdf_input_file)
+        return len(content_items)

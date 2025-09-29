@@ -3,12 +3,10 @@
 __version__ = "1.0.0"
 __author__ = "USB PD Parser Team"
 
-from .config import Config
 from .models import TOCEntry
 from .pipeline_orchestrator import PipelineOrchestrator
 
 __all__ = [
-    "Config",
-    "PipelineOrchestrator",
+    "PipelineOrchestrator", 
     "TOCEntry",
 ]
