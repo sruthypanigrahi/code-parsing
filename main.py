@@ -1,11 +1,6 @@
-from src.app import CLIInterface
+"""Entry point using OOP classes: PDFLoader, PDFParser, TextCleaner, OutputWriter, ConfigManager."""
 
-
-def main() -> None:
-    """Main entry point."""
-    cli = CLIInterface()
-    cli.run()
-
+from src.main import main
 
 if __name__ == "__main__":
     main()
