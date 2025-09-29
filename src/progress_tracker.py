@@ -21,7 +21,7 @@ class ProgressBar:
         self.width = width
         self.file = file or sys.stdout
         self.start_time = time.time()
-        self._last_update = 0
+        self._last_update = 0.0
 
     def update(self, increment: int = 1) -> None:
         """Update progress by increment."""
@@ -46,7 +46,7 @@ class ProgressBar:
             return
 
         percent = (self.current / self.total) * 100
-        filled_width = int(self.width * self.current / self.total)
+        filled_width: int = int(self.width * self.current / self.total)
 
         bar = "█" * filled_width + "░" * (self.width - filled_width)
 

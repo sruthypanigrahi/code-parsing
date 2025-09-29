@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Protocol
+from typing import Optional, Protocol
 
 from .models import TOCEntry
 
@@ -70,7 +70,7 @@ class ConfigProvider(Protocol):
         ...
 
     @property
-    def max_pages(self) -> int | None:
+    def max_pages(self) -> Optional[int]:
         """Maximum pages to process."""
         ...
 
