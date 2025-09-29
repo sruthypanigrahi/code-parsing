@@ -41,8 +41,8 @@ venv.bak/
 Thumbs.db
 
 # Project specific
-outputs/
-assets/*.pdf
+# outputs/
+# assets/*.pdf
 *.log
 
 # Testing
