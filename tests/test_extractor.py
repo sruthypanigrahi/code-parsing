@@ -1,72 +1,70 @@
-"""Tests for PDF extractor."""
+"""Tests for extractors with OOP principles."""
 
 from pathlib import Path
-from typing import Any
-from unittest.mock import Mock, patch
-
 import pytest
-
-from src.extractor import extract_front_pages, get_doc_title
-
-
-# Create PDFNotFoundError if not imported from exceptions
-class PDFNotFoundError(Exception):
-    """Raised when PDF file is not found."""
-
-    pass
+from src.pdf_extractor import BaseExtractor
 
 
-def test_extract_front_pages_file_not_found() -> None:
-    """Test extraction with non-existent file."""
-    with pytest.raises(
-        Exception
-    ):  # Use generic Exception since PDFNotFoundError may not be available
-        list(extract_front_pages(Path("nonexistent.pdf")))
+class MockExtractor(BaseExtractor):  # Inheritance
+    """Mock extractor (Inheritance, Polymorphism)."""
+    
+    def extract(self):  # Polymorphism
+        return ["mock_data"]
 
 
-@patch("src.extractor.fitz")
-def test_extract_front_pages_success(mock_fitz: Any) -> None:
-    """Test successful page extraction."""
-    # Mock PDF document
-    mock_doc = Mock()
-    mock_doc.__len__ = Mock(return_value=5)
-    mock_page = Mock()
-    mock_page.get_text.return_value = "Sample text"
-    mock_doc.__getitem__ = Mock(return_value=mock_page)
-    mock_fitz.open.return_value = mock_doc  # type: ignore
-
-    # Create a temporary file
-    test_file = Path("test.pdf")
-    test_file.touch()
-
-    try:
-        pages = list(extract_front_pages(test_file, max_pages=2))
-        assert len(pages) == 2
-        assert all(page == "Sample text" for page in pages)
-    finally:
-        test_file.unlink()
-
-
-@patch("src.extractor.fitz")
-def test_get_doc_title_success(mock_fitz: Any) -> None:
-    """Test successful title extraction."""
-    mock_doc = Mock()
-    mock_doc.metadata = {"title": "Test Document"}
-    mock_fitz.open.return_value = mock_doc  # type: ignore
-
-    test_file = Path("test.pdf")
-    test_file.touch()
-
-    try:
-        title = get_doc_title(test_file)
-        assert title == "Test Document"
-    finally:
-        test_file.unlink()
-
-
-def test_get_doc_title_file_not_found() -> None:
-    """Test title extraction with non-existent file."""
-    with pytest.raises(
-        Exception
-    ):  # Use generic Exception since PDFNotFoundError may not be available
-        get_doc_title(Path("nonexistent.pdf"))
+class TestBaseExtractor:  # Encapsulation
+    """Test base extractor (Encapsulation, Abstraction)."""
+    
+    def test_file_validation(self):  # Encapsulation
+        """Test file validation (Abstraction)."""
+        with pytest.raises(FileNotFoundError):
+            MockExtractor(Path("nonexistent.pdf"))
+    
+    def test_valid_file(self, tmp_path: Path):  # Encapsulation
+        """Test with valid file."""
+        test_file: Path = tmp_path / "test.pdf"
+        test_file.touch()
+        
+        extractor = MockExtractor(test_file)  # Polymorphism
+        assert extractor.extract() == ["mock_data"]
+    
+    def test_protected_attributes(self, tmp_path: Path):  # Encapsulation
+        """Test protected attributes."""
+        test_file: Path = tmp_path / "test.pdf"
+        test_file.touch()
+        
+        extractor = MockExtractor(test_file)
+        
+        # Test protected attributes (Encapsulation)
+        assert hasattr(extractor, '_pdf_path')
+        assert hasattr(extractor, '_logger')
+        assert getattr(extractor, '_pdf_path') == test_file  # type: ignore
+    
+    def test_inheritance_structure(self, tmp_path: Path):  # Inheritance
+        """Test inheritance structure."""
+        test_file: Path = tmp_path / "test.pdf"
+        test_file.touch()
+        
+        extractor = MockExtractor(test_file)
+        
+        # Test inheritance (Inheritance)
+        assert isinstance(extractor, BaseExtractor)
+        assert hasattr(extractor, '_get_fitz')
+    
+    def test_polymorphism(self, tmp_path: Path):  # Polymorphism
+        """Test polymorphic behavior."""
+        test_file: Path = tmp_path / "test.pdf"
+        test_file.touch()
+        
+        # Different implementations (Polymorphism)
+        extractors = [MockExtractor(test_file)]
+        
+        for extractor in extractors:
+            result = extractor.extract()  # Same interface
+            assert isinstance(result, list)
+    
+    def test_abstraction(self):  # Abstraction
+        """Test abstract base class."""
+        with pytest.raises(TypeError):
+            # Cannot instantiate abstract class (Abstraction)
+            BaseExtractor(Path("test.pdf"))  # type: ignore

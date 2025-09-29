@@ -1,70 +1,69 @@
-"""Shared test fixtures and configuration."""
-
-from pathlib import Path
+"""Test configuration with OOP principles."""
 
 import pytest
-
-from src.models import PageContent, TOCEntry
-
-
-@pytest.fixture
-def sample_toc_entry() -> TOCEntry:
-    """Standard TOC entry for testing."""
-    return TOCEntry(
-        doc_title="USB Power Delivery Specification",
-        section_id="1",
-        title="Introduction",
-        page=15,
-        level=1,
-        full_path="1 Introduction",
-    )
+from pathlib import Path
+from typing import Any, Dict
+from src.config import Config
 
 
-@pytest.fixture
-def sample_toc_entries() -> list[TOCEntry]:
-    """Multiple TOC entries for testing."""
-    return [
-        TOCEntry(
-            doc_title="Test Doc",
-            section_id="1",
-            title="Introduction",
-            page=15,
-            level=1,
-            full_path="1 Introduction",
-        ),
-        TOCEntry(
-            doc_title="Test Doc",
-            section_id="1.1",
-            title="Overview",
-            page=16,
-            level=2,
-            full_path="1.1 Overview",
-        ),
-        TOCEntry(
-            doc_title="Test Doc",
-            section_id="2",
-            title="Technical Specifications",
-            page=25,
-            level=1,
-            full_path="2 Technical Specifications",
-        ),
-    ]
+class TestConfig:  # Encapsulation
+    """Test config helper (Encapsulation, Abstraction)."""
+    
+    def __init__(self, test_data: Dict[str, Any]):
+        self._test_data = test_data  # Encapsulation
+    
+    def create_config_file(self, tmp_path: Path, filename: str = "test_config.yml") -> Path:
+        config_file = tmp_path / filename
+        config_content = "\n".join([f"{k}: {v}" for k, v in self._test_data.items()])
+        config_file.write_text(config_content)
+        return config_file
+    
+    def get_test_data(self) -> Dict[str, Any]:  # Encapsulation
+        return self._test_data.copy()
 
 
-@pytest.fixture
-def sample_page_content() -> PageContent:
-    """Sample page content for testing."""
-    return PageContent(
-        page=1,
-        text="1. Introduction 15\n1.1 Overview 16\n2. Technical Specifications 25",
-        image_count=0,
-        table_count=1,
-    )
+class MockPDFFile:  # Abstraction
+    """Mock PDF file helper (Abstraction, Encapsulation)."""
+    
+    def __init__(self, content: str = "Mock PDF content"):
+        self._content = content  # Encapsulation
+    
+    def create_file(self, tmp_path: Path, filename: str = "test.pdf") -> Path:
+        pdf_file = tmp_path / filename
+        pdf_file.write_text(self._content)
+        return pdf_file
+    
+    @property  # Encapsulation
+    def content(self) -> str:
+        return self._content
 
 
-@pytest.fixture
-def test_output_dir(tmp_path: Path) -> Path:
-    """Temporary output directory for tests."""
-    output_dir: Path = tmp_path / "test_outputs"
-    output_dir.mkdir(exist_ok=True)
-    return output_dir
+@pytest.fixture  # Factory pattern (Abstraction)
+def test_config_helper():
+    return TestConfig({
+        "pdf_input_file": "assets/test.pdf",
+        "output_directory": "test_outputs",
+        "max_pages": 50
+    })
+
+
+@pytest.fixture  # Factory pattern (Abstraction)
+def mock_pdf_helper():
+    return MockPDFFile("Sample PDF content for testing")
+
+
+@pytest.fixture  # Factory pattern (Abstraction)
+def sample_config(tmp_path: Path):
+    config_helper = TestConfig({
+        "pdf_input_file": "test.pdf",
+        "output_directory": "outputs",
+        "max_pages": 100
+    })
+    config_file = config_helper.create_config_file(tmp_path)
+    return Config(str(config_file))
+
+
+@pytest.fixture  # Factory pattern (Abstraction)
+def sample_pdf_file(tmp_path: Path):
+    pdf_helper = MockPDFFile("Test PDF content")
+    return pdf_helper.create_file(tmp_path)

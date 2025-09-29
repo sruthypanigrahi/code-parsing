@@ -1,46 +1,60 @@
-"""Test package for USB PD parser.
+"""Test package with OOP principles."""
 
-This package contains unit and integration tests for the USB Power Delivery
-specification parser. Tests are organized by module and functionality.
-
-Test Structure:
-- test_parser.py: TOC parsing functionality
-- test_validator.py: Validation logic
-- test_end_to_end.py: Integration tests
-- conftest.py: Shared fixtures
-
-Usage:
-    pytest tests/                    # Run all tests
-    pytest tests/test_parser.py      # Run parser tests only
-    pytest -v                       # Verbose output
-    pytest --cov=src                # With coverage
-"""
-
-__version__ = "1.0.0"
-__author__ = "USB PD Parser Team"
-
-# Test configuration
-TEST_DATA_DIR = "tests/fixtures"
-SAMPLE_PDF = "assets/USB_PD_R3_2 V1.1 2024-10.pdf"
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List
 
 
-# Common test utilities
-def create_mock_toc_entry(section_id: str = "1.1", title: str = "Test", page: int = 15):
-    """Create a mock TOC entry for testing."""
-    from src.models import TOCEntry
+class BaseTestCase(ABC):  # Abstraction
+    """Abstract base test case (Abstraction, Encapsulation)."""
+    
+    def __init__(self):
+        self._test_data: Dict[str, Any] = {}  # Encapsulation: protected test data
+    
+    @abstractmethod  # Abstraction: must be implemented
+    def setup_test_data(self) -> None:
+        """Setup test data."""
+        pass
+    
+    def _add_test_data(self, key: str, value: Any) -> None:  # Encapsulation: protected
+        """Add test data."""
+        self._test_data[key] = value
+    
+    @property  # Encapsulation: controlled access
+    def test_data(self) -> Dict[str, Any]:
+        """Get test data."""
+        return self._test_data.copy()
 
-    return TOCEntry(
-        doc_title="Test Document",
-        section_id=section_id,
-        title=title,
-        page=page,
-        level=len(section_id.split(".")),
-        full_path=f"{section_id} {title}",
-    )
+
+class MockTestCase(BaseTestCase):  # Inheritance
+    """Mock test case (Inheritance, Polymorphism)."""
+    
+    def setup_test_data(self) -> None:  # Polymorphism: implements abstract method
+        """Setup mock test data."""
+        self._add_test_data("mock_key", "mock_value")
+        self._add_test_data("test_count", 42)
 
 
-def create_mock_page_content(page: int = 1, text: str = "Sample text"):
-    """Create mock page content for testing."""
-    from src.models import PageContent
+class TestHelper:  # Encapsulation
+    """Test helper utilities (Encapsulation, Abstraction)."""
+    
+    @staticmethod  # Abstraction: utility method
+    def create_mock_data(count: int = 5) -> List[str]:
+        """Create mock data."""
+        return [f"mock_item_{i}" for i in range(count)]
+    
+    @staticmethod  # Abstraction: utility method
+    def validate_test_result(result: Any, expected_type: type) -> bool:
+        """Validate test result."""
+        return isinstance(result, expected_type)
 
-    return PageContent(page=page, text=text, image_count=0, table_count=0)
+
+# Factory function (Abstraction)
+def create_test_case(test_type: str = "mock") -> BaseTestCase:
+    """Factory function for test cases (Polymorphism)."""
+    if test_type == "mock":
+        return MockTestCase()
+    else:
+        return MockTestCase()  # Default to mock
+
+
+__all__ = ["BaseTestCase", "MockTestCase", "TestHelper", "create_test_case"]

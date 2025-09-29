@@ -60,4 +60,4 @@ dmypy.json
 .ruff_cache/
 
 # Assets (large PDFs)
-# assets/*.pdf
+assets/*.pdf

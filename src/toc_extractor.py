@@ -1,109 +1,98 @@
-"""Table of Contents extraction class."""
+"""TOC extractor with OOP principles."""
 
 import re
-from typing import Optional
-
+from abc import ABC, abstractmethod
+from pathlib import Path
+from typing import Any, List, Optional
 from .models import TOCEntry
 
 
-class TOCExtractor:
-    """Handles TOC extraction from PDF content."""
-
-    def __init__(self, doc_title: str):
-        self.doc_title = doc_title
-        self.patterns = [
-            # Pattern for "Section Title ... Page"
+class BaseTOCExtractor(ABC):  # Abstraction
+    """Abstract TOC extractor (Abstraction, Encapsulation)."""
+    
+    def __init__(self, doc_title: str = "USB PD Specification"):
+        self._doc_title = doc_title  # Encapsulation
+        # Encapsulation: protected patterns
+        self._patterns = [
             r"^([A-Z][^.]*?)\s*\.{3,}\s*(\d+)$",
-            # Pattern for numbered sections
             r"^(\d+(?:\.\d+)*)\s+([^.]+?)\s*\.{2,}\s*(\d+)$",
-            # Pattern for simple "Title Page"
-            r"^([A-Z][A-Za-z\s]+)\s+(\d+)$",
+            r"^([A-Z][A-Za-z\s&(),-]+)\s+(\d+)$"
         ]
-
-    def extract_from_content(self, content: str) -> list[TOCEntry]:
-        """Extract TOC entries from text content."""
-        entries: list[TOCEntry] = []
-        lines = content.split("\n")
-        section_counter = 1
-
-        # Look for TOC section patterns
-        in_toc_section = False
-
-        for line in lines:
-            line = line.strip()
-            if not line or len(line) < 5:
-                continue
-
-            # Detect TOC section start
-            if "table of contents" in line.lower() or "contents" in line.lower():
-                in_toc_section = True
-                continue
-
-            # Skip if not in TOC section and no clear TOC patterns
-            if not in_toc_section and not any(
-                pattern in line for pattern in ["...", "  "]
-            ):
-                continue
-
-            entry = self._parse_toc_line(line, section_counter)
-            if entry:
-                entries.append(entry)
-                section_counter += 1
-
-        return entries
-
-    def _parse_toc_line(self, line: str, section_counter: int) -> Optional[TOCEntry]:
-        """Parse a single TOC line into a TOCEntry."""
-        # Enhanced patterns for USB PD spec
-        enhanced_patterns = [
-            r"^([A-Z][^.]*?)\s*\.{3,}\s*(\d+)$",  # Title ... Page
-            r"^(\d+(?:\.\d+)*)\s+([^.]+?)\s*\.{2,}\s*(\d+)$",  # Section Title ... Page
-            r"^([A-Z][A-Za-z\s&(),-]+)\s+(\d+)$",  # Title Page (no dots)
-            r"^([A-Z][^\d]*?)\s*(\d+)$",  # Simple Title Page
-        ]
-
-        for pattern in enhanced_patterns:
+    
+    @abstractmethod  # Abstraction
+    def extract_toc(self, source: Path) -> List[TOCEntry]:
+        pass
+    
+    def _parse_line(self, line: str, counter: int) -> Optional[TOCEntry]:
+        """Parse line for TOC entry (Encapsulation)."""
+        for pattern in self._patterns:
             match = re.match(pattern, line)
             if match:
                 groups = match.groups()
-
-                if len(groups) == 2:  # Title and page
+                if len(groups) == 2:
                     title, page_str = groups
-                    section_id = f"S{section_counter}"
-                elif len(groups) == 3:  # Section, title, page
+                    section_id = f"S{counter}"
+                elif len(groups) == 3:
                     section_id, title, page_str = groups
                 else:
                     continue
-
+                
                 try:
                     page = int(page_str)
-                    # Filter out invalid entries
-                    if page < 1 or page > 2000 or len(title.strip()) < 3:
-                        continue
-
-                    return TOCEntry(
-                        doc_title=self.doc_title,
-                        section_id=section_id,
-                        title=title.strip(),
-                        full_path=title.strip(),
-                        page=page,
-                        level=self._determine_level(section_id),
-                        parent_id=None,
-                        tags=[],
-                    )
+                    if 1 <= page <= 2000 and len(title.strip()) >= 3:
+                        return TOCEntry(
+                            doc_title=self._doc_title,
+                            section_id=section_id,
+                            title=title.strip(),
+                            full_path=title.strip(),
+                            page=page,
+                            level=section_id.count(".") + 1,
+                            parent_id=None,
+                            tags=[]
+                        )
                 except ValueError:
-                    continue
-
+                    pass
         return None
 
-    def _determine_level(self, section_id: str) -> int:
-        """Determine hierarchy level from section ID."""
-        if section_id.startswith("S"):
-            return 1
 
-        dots = section_id.count(".")
-        return dots + 1
-
-    def _get_existing_entries(self) -> list[TOCEntry]:
-        """Get existing entries count (placeholder)."""
-        return []
+class TOCExtractor(BaseTOCExtractor):  # Inheritance
+    """PDF TOC extractor (Inheritance, Polymorphism)."""
+    
+    def extract_toc(self, source: Path) -> List[TOCEntry]:  # Polymorphism
+        content = self._get_content(source)
+        return self._extract_entries(content)
+    
+    def _get_content(self, pdf_path: Path) -> str:  # Encapsulation
+        try:
+            import fitz  # type: ignore
+            doc: Any = fitz.open(str(pdf_path))  # type: ignore
+            content = ""
+            for page_num in range(min(20, len(doc))):  # type: ignore
+                content += str(doc[page_num].get_text())  # type: ignore
+            doc.close()  # type: ignore
+            return content
+        except Exception as e:
+            # Log the specific error instead of silent failure
+            import logging
+            logging.getLogger(__name__).warning(f"PDF read error: {e}")
+            return ""
+    
+    def _extract_entries(self, content: str) -> List[TOCEntry]:
+        """Extract TOC entries from content (Encapsulation)."""
+        entries: List[TOCEntry] = []
+        counter, in_toc = 1, False
+        
+        for line in content.split("\n"):
+            line = line.strip()
+            if len(line) < 5:
+                continue
+            if "contents" in line.lower():
+                in_toc = True
+                continue
+            if not in_toc and not any(p in line for p in ["...", "  "]):
+                continue
+            entry = self._parse_line(line, counter)
+            if entry:
+                entries.append(entry)  # type: ignore
+                counter += 1
+        return entries
