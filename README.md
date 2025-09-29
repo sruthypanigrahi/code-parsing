@@ -258,13 +258,13 @@ python search_content.py "connector" outputs/usb_pd_spec.jsonl
 - **Images**: 196
 - **Tables**: 911
 
-**Sample TOC Output** ([`sample_usb_pd_toc.jsonl`](outputs/sample_usb_pd_toc.jsonl)):
+**Sample TOC Output** ([`usb_pd_toc.jsonl`](outputs/usb_pd_toc.jsonl)):
 ```json
 {"doc_title":"USB_PD_R3_2_V1.1_2024-10.pdf","section_id":"S1","title":"Overview","full_path":"Overview","page":34,"level":1,"parent_id":null,"tags":[]}
 {"doc_title":"USB_PD_R3_2_V1.1_2024-10.pdf","section_id":"S2","title":"Purpose","full_path":"Purpose","page":35,"level":1,"parent_id":null,"tags":[]}
 ```
 
-**Sample Content Output** ([`sample_usb_pd_spec.jsonl`](outputs/sample_usb_pd_spec.jsonl)):
+**Sample Content Output** ([`usb_pd_spec.jsonl`](outputs/usb_pd_spec.jsonl)):
 ```json
 {"doc_title":"USB_PD_R3_2_V1.1_2024-10.pdf","content_id":"C1","type":"paragraph","content":"Universal Serial Bus","page":1,"block_id":"p1_0","bbox":[171.33,62.91,423.95,95.74],"metadata":{"extracted_at":"2025-09-27T01:28:59.335084","content_length":20}}
 {"doc_title":"USB_PD_R3_2_V1.1_2024-10.pdf","content_id":"C2","type":"image","content":"[Image 469x72 on page 1032]","page":1032,"block_id":"img1032_8","bbox":[71.74,260.98,540.26,332.54],"metadata":{"extracted_at":"2025-09-27T01:28:59.335084","content_length":27}}
@@ -441,8 +441,7 @@ code-parsing/
 ├── outputs/                   # Generated output files
 │   ├── usb_pd_toc.jsonl        # Table of Contents (149 entries)
 │   ├── usb_pd_spec.jsonl       # Complete specification (26,691 items)
-│   ├── sample_usb_pd_toc.jsonl # Sample TOC entries
-│   ├── sample_usb_pd_spec.jsonl # Sample content entries
+
 │   └── parser.log              # Execution logs
 ├── main.py                    # CLI entry point
 ├── search_content.py          # Content search utility
@@ -562,8 +561,8 @@ python search_content.py "USB"
 
 **Sample PDF**: Place your USB PD specification PDF in `assets/` directory
 **Sample Outputs**: 
-- [TOC Sample](outputs/sample_usb_pd_toc.jsonl) - Sample TOC entries format
-- [Content Sample](outputs/sample_usb_pd_spec.jsonl) - Sample content format
+- [TOC Sample](outputs/usb_pd_toc.jsonl) - Sample TOC entries format
+- [Content Sample](outputs/usb_pd_spec.jsonl) - Sample content format
 - **Full outputs generated when you run**: `python main.py --mode 1`
 
 ## 🎯 Object-Oriented Architecture
