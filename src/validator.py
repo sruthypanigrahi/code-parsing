@@ -1,7 +1,7 @@
 import logging
 from collections import Counter
 from collections.abc import Iterator
-from typing import Any, Dict, List, Set
+from typing import Any
 
 from .models import TOCEntry
 

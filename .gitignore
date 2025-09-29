@@ -40,17 +40,24 @@ venv.bak/
 .DS_Store
 Thumbs.db
 
-# Project specific
-# outputs/
-# assets/*.pdf
-# *.log
+# Generated outputs (should be recreated by running the tool)
+outputs/
+test_output/
+*.jsonl
+parsed_data.json
+paragraphs.json
+*.log
 
 # Testing
 .coverage
 .pytest_cache/
 htmlcov/
 
-# MyPy
+# Caches
 .mypy_cache/
 .dmypy.json
 dmypy.json
+.ruff_cache/
+
+# Assets (large PDFs)
+# assets/*.pdf

@@ -1,8 +1,9 @@
 """Parallel processing utilities for USB PD Parser."""
 
 import multiprocessing
+from collections.abc import Iterator
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
-from typing import Callable, Iterator, List, Optional, TypeVar
+from typing import Callable, Optional, TypeVar
 
 T = TypeVar("T")
 R = TypeVar("R")

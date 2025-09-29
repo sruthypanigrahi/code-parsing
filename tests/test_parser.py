@@ -1,6 +1,5 @@
 """Tests for the TOC parser functionality."""
 
-from typing import List, Tuple
 
 from src.models import TOCEntry
 from src.toc_extractor import TOCExtractor

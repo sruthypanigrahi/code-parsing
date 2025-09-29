@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List, Tuple
 
 from src.models import TOCEntry
 from src.pdf_extractor import PDFExtractor

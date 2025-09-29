@@ -1,7 +1,7 @@
 """Table of Contents extraction class."""
 
 import re
-from typing import List, Optional
+from typing import Optional
 
 from .models import TOCEntry
 

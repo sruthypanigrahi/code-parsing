@@ -1,7 +1,6 @@
 """TOC extraction pipeline."""
 
 from pathlib import Path
-from typing import List
 
 from .models import TOCEntry
 from .pdf_extractor import PDFExtractor

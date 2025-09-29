@@ -1,6 +1,6 @@
 """Tests for parsing strategies."""
 
-from typing import Iterator, List
+from collections.abc import Iterator
 
 from src.models import TOCEntry
 from src.toc_extractor import TOCExtractor

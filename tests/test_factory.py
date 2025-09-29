@@ -1,10 +1,9 @@
 """Tests for factory classes."""
 
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
 
-from src.exceptions import USBPDParserError
 from src.toc_extractor import TOCExtractor
 
 

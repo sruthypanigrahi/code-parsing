@@ -5,7 +5,7 @@ import json
 import sys
 from collections import Counter
 from pathlib import Path
-from typing import Any, Dict, Set
+from typing import Any, Dict
 
 from ..base import BaseValidator
 

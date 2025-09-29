@@ -4,7 +4,7 @@ import functools
 import threading
 import time
 from contextlib import contextmanager
-from typing import Any, Dict
+from typing import Any
 
 
 class PerformanceMonitor:

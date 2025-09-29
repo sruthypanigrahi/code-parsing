@@ -3,7 +3,7 @@
 import json
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 
 class ContentProcessor:
