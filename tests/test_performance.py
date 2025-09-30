@@ -8,11 +8,11 @@ from typing import Any, Callable, List
 class BasePerfTest(ABC):  # Abstraction
     def __init__(self, name: str):
         self._name = name  # Encapsulation
-    
+
     @abstractmethod  # Abstraction
     def measure(self) -> bool:
         pass
-    
+
     def _time_it(self, func: Callable[[], Any]) -> float:  # Encapsulation
         start = time.perf_counter()
         func()
@@ -22,6 +22,7 @@ class BasePerfTest(ABC):  # Abstraction
 class ConfigPerfTest(BasePerfTest):  # Inheritance
     def measure(self) -> bool:  # Polymorphism
         from src.config import Config
+
         time_taken = self._time_it(lambda: Config("application.yml"))
         return time_taken < 1.0
 
@@ -29,6 +30,7 @@ class ConfigPerfTest(BasePerfTest):  # Inheritance
 class ModelPerfTest(BasePerfTest):  # Inheritance
     def measure(self) -> bool:  # Polymorphism
         from src.models import BaseContent
+
         time_taken = self._time_it(lambda: BaseContent(page=1, content="test"))
         return time_taken < 1.0
 
@@ -36,10 +38,10 @@ class ModelPerfTest(BasePerfTest):  # Inheritance
 class PerfTestSuite:  # Encapsulation
     def __init__(self):
         self._tests: List[BasePerfTest] = []  # Encapsulation
-    
+
     def add(self, test: BasePerfTest) -> None:  # Polymorphism
         self._tests.append(test)
-    
+
     def run_all(self) -> bool:  # Abstraction
         results: List[bool] = [t.measure() for t in self._tests]
         return all(results)

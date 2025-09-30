@@ -8,7 +8,7 @@ from src.config import Config
 class BasePipelineTest(ABC):  # Abstraction
     def __init__(self):
         self._config = Config("application.yml")  # Encapsulation
-    
+
     @abstractmethod  # Abstraction
     def test_pipeline(self) -> bool:
         pass
@@ -17,9 +17,10 @@ class BasePipelineTest(ABC):  # Abstraction
 class MockPipelineTest(BasePipelineTest):  # Inheritance
     def test_pipeline(self) -> bool:  # Polymorphism
         from src.pipeline_orchestrator import PipelineOrchestrator
+
         try:
             orchestrator = PipelineOrchestrator("application.yml")
-            return hasattr(orchestrator, '_config')
+            return hasattr(orchestrator, "_config")
         except (ValueError, OSError, RuntimeError) as e:
             print(f"Test failed: {e}")
             return False
@@ -34,10 +35,10 @@ class ConfigPipelineTest(BasePipelineTest):  # Inheritance
 class PipelineTestRunner:  # Encapsulation
     def __init__(self):
         self._tests: List[BasePipelineTest] = []  # Encapsulation
-    
+
     def add_test(self, test: BasePipelineTest) -> None:  # Polymorphism
         self._tests.append(test)
-    
+
     def run_all(self) -> bool:  # Abstraction
         results: List[bool] = [t.test_pipeline() for t in self._tests]
         return all(results)

@@ -7,6 +7,6 @@ from .models import TOCEntry
 from .pipeline_orchestrator import PipelineOrchestrator
 
 __all__ = [
-    "PipelineOrchestrator", 
+    "PipelineOrchestrator",
     "TOCEntry",
 ]

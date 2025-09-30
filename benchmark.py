@@ -11,7 +11,7 @@ class BaseBenchmark(ABC):  # Abstraction
     def __init__(self, name: str):
         self._name = name  # Encapsulation
         self._logger = logging.getLogger(__name__)  # Encapsulation
-    
+
     @abstractmethod  # Abstraction
     def run(self) -> Dict[str, Any]:
         pass
@@ -20,6 +20,7 @@ class BaseBenchmark(ABC):  # Abstraction
 class ConfigBenchmark(BaseBenchmark):  # Inheritance
     def run(self) -> Dict[str, Any]:  # Polymorphism
         from src.config import Config
+
         config = Config("application.yml")  # Create once, reuse
         start = time.perf_counter()
         for _ in range(100):
@@ -32,8 +33,9 @@ class ModelBenchmark(BaseBenchmark):  # Inheritance
     def run(self) -> Dict[str, Any]:  # Polymorphism
         start = time.perf_counter()
         from src.models import BaseContent
+
         for i in range(200):
-            BaseContent(page=i+1, content=f"test {i}")
+            BaseContent(page=i + 1, content=f"test {i}")
         elapsed = time.perf_counter() - start
         return {"name": self._name, "time": elapsed, "ops": 200}
 
@@ -41,10 +43,10 @@ class ModelBenchmark(BaseBenchmark):  # Inheritance
 class BenchmarkRunner:  # Encapsulation
     def __init__(self):
         self._benchmarks: List[BaseBenchmark] = []  # Encapsulation
-    
+
     def add(self, benchmark: BaseBenchmark) -> None:  # Polymorphism
         self._benchmarks.append(benchmark)
-    
+
     def run_all(self) -> None:  # Abstraction
         for benchmark in self._benchmarks:
             result = benchmark.run()  # Polymorphism

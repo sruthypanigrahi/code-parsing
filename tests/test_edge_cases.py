@@ -8,7 +8,7 @@ from src.config import Config
 class BaseEdgeTest(ABC):  # Abstraction
     def __init__(self):
         self._errors: List[str] = []  # Encapsulation
-    
+
     @abstractmethod  # Abstraction
     def test_edge_case(self) -> bool:
         pass
@@ -28,6 +28,7 @@ class ConfigEdgeTest(BaseEdgeTest):  # Inheritance
 class ModelEdgeTest(BaseEdgeTest):  # Inheritance
     def test_edge_case(self) -> bool:  # Polymorphism
         from src.models import BaseContent
+
         try:
             BaseContent(page=0, content="")
             return True
@@ -39,10 +40,10 @@ class ModelEdgeTest(BaseEdgeTest):  # Inheritance
 class EdgeTestRunner:  # Encapsulation
     def __init__(self):
         self._tests: List[BaseEdgeTest] = []  # Encapsulation
-    
+
     def add(self, test: BaseEdgeTest) -> None:  # Polymorphism
         self._tests.append(test)
-    
+
     def run_all(self) -> bool:  # Abstraction
         results: List[bool] = []
         for test in self._tests:

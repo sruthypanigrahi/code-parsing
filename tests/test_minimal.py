@@ -7,7 +7,7 @@ from typing import List
 class BaseTest(ABC):  # Abstraction
     def __init__(self, name: str):
         self._name = name  # Encapsulation
-    
+
     @abstractmethod  # Abstraction
     def execute(self) -> bool:
         pass
@@ -16,6 +16,7 @@ class BaseTest(ABC):  # Abstraction
 class ConfigTest(BaseTest):  # Inheritance
     def execute(self) -> bool:  # Polymorphism
         from src.config import Config
+
         pdf_file = Config("application.yml").pdf_input_file
         return len(str(pdf_file)) > 0
 
@@ -23,16 +24,17 @@ class ConfigTest(BaseTest):  # Inheritance
 class ModelTest(BaseTest):  # Inheritance
     def execute(self) -> bool:  # Polymorphism
         from src.models import BaseContent
+
         return BaseContent(page=1, content="test").page == 1
 
 
 class TestSuite:  # Encapsulation
     def __init__(self):
         self._tests: List[BaseTest] = []  # Encapsulation
-    
+
     def add(self, test: BaseTest) -> None:  # Polymorphism
         self._tests.append(test)
-    
+
     def run(self) -> bool:  # Abstraction
         results: List[bool] = [t.execute() for t in self._tests]
         return all(results)

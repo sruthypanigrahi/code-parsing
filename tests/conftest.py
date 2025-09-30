@@ -8,7 +8,7 @@ from pathlib import Path
 class BaseFixture(ABC):  # Abstraction
     def __init__(self):
         self._data = {}  # Encapsulation
-    
+
     @abstractmethod  # Abstraction
     def create(self, tmp_path: Path):
         pass
@@ -31,10 +31,10 @@ class PDFFixture(BaseFixture):  # Inheritance
 class FixtureFactory:  # Encapsulation
     def __init__(self):
         self._fixtures = {}  # Encapsulation
-    
+
     def register(self, name: str, fixture: BaseFixture) -> None:  # Polymorphism
         self._fixtures[name] = fixture
-    
+
     def create(self, name: str, tmp_path: Path):  # Abstraction
         return self._fixtures[name].create(tmp_path)
 

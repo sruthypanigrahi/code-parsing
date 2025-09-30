@@ -6,19 +6,19 @@ from typing import Any, Dict, List
 
 class BaseTestCase(ABC):  # Abstraction
     """Abstract base test case (Abstraction, Encapsulation)."""
-    
+
     def __init__(self):
         self._test_data: Dict[str, Any] = {}  # Encapsulation: protected test data
-    
+
     @abstractmethod  # Abstraction: must be implemented
     def setup_test_data(self) -> None:
         """Setup test data."""
         pass
-    
+
     def _add_test_data(self, key: str, value: Any) -> None:  # Encapsulation: protected
         """Add test data."""
         self._test_data[key] = value
-    
+
     @property  # Encapsulation: controlled access
     def test_data(self) -> Dict[str, Any]:
         """Get test data."""
@@ -27,7 +27,7 @@ class BaseTestCase(ABC):  # Abstraction
 
 class MockTestCase(BaseTestCase):  # Inheritance
     """Mock test case (Inheritance, Polymorphism)."""
-    
+
     def setup_test_data(self) -> None:  # Polymorphism: implements abstract method
         """Setup mock test data."""
         self._add_test_data("mock_key", "mock_value")
@@ -36,12 +36,12 @@ class MockTestCase(BaseTestCase):  # Inheritance
 
 class TestHelper:  # Encapsulation
     """Test helper utilities (Encapsulation, Abstraction)."""
-    
+
     @staticmethod  # Abstraction: utility method
     def create_mock_data(count: int = 5) -> List[str]:
         """Create mock data."""
         return [f"mock_item_{i}" for i in range(count)]
-    
+
     @staticmethod  # Abstraction: utility method
     def validate_test_result(result: Any, expected_type: type) -> bool:
         """Validate test result."""

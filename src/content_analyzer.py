@@ -18,10 +18,12 @@ class PatternAnalyzer(BaseAnalyzer):  # Inheritance
             "definition": r":",
             "numbered_item": r"^\d+\.",
             "bullet_point": r"^[•\-]",
-            "table_data": r"[\|\t]{2,}"
+            "table_data": r"[\|\t]{2,}",
         }
-        self._compiled = {k: re.compile(v, re.I) for k, v in patterns.items()}  # Encapsulation
-    
+        self._compiled = {
+            k: re.compile(v, re.I) for k, v in patterns.items()
+        }  # Encapsulation
+
     def analyze(self, text: str) -> str:  # Polymorphism
         text = text.strip()
         for content_type, pattern in self._compiled.items():
@@ -33,12 +35,14 @@ class PatternAnalyzer(BaseAnalyzer):  # Inheritance
 class ContentAnalyzer:  # Composition
     def __init__(self):
         self._analyzer = PatternAnalyzer()  # Encapsulation
-    
+
     def classify(self, text: str) -> str:  # Abstraction
         return self._analyzer.analyze(text)  # Polymorphism
-    
-    def extract_items(self, text: str, page: int) -> Iterator[Dict[str, Any]]:  # Abstraction
-        for i, line in enumerate(text.split('\n')):
+
+    def extract_items(
+        self, text: str, page: int
+    ) -> Iterator[Dict[str, Any]]:  # Abstraction
+        for i, line in enumerate(text.split("\n")):
             line = line.strip()
             if len(line) > 10:
                 content_type = self.classify(line)
@@ -48,5 +52,5 @@ class ContentAnalyzer:  # Composition
                         "content": line,
                         "page": page + 1,
                         "block_id": f"{content_type[0]}{page}_{i}",
-                        "bbox": []
+                        "bbox": [],
                     }

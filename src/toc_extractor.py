@@ -9,20 +9,20 @@ from .models import TOCEntry
 
 class BaseTOCExtractor(ABC):  # Abstraction
     """Abstract TOC extractor (Abstraction, Encapsulation)."""
-    
+
     def __init__(self, doc_title: str = "USB PD Specification"):
         self._doc_title = doc_title  # Encapsulation
         # Encapsulation: protected patterns
         self._patterns = [
             r"^([A-Z][^.]*?)\s*\.{3,}\s*(\d+)$",
             r"^(\d+(?:\.\d+)*)\s+([^.]+?)\s*\.{2,}\s*(\d+)$",
-            r"^([A-Z][A-Za-z\s&(),-]+)\s+(\d+)$"
+            r"^([A-Z][A-Za-z\s&(),-]+)\s+(\d+)$",
         ]
-    
+
     @abstractmethod  # Abstraction
     def extract_toc(self, source: Path) -> List[TOCEntry]:
         pass
-    
+
     def _parse_line(self, line: str, counter: int) -> Optional[TOCEntry]:
         """Parse line for TOC entry (Encapsulation)."""
         for pattern in self._patterns:
@@ -36,7 +36,7 @@ class BaseTOCExtractor(ABC):  # Abstraction
                     section_id, title, page_str = groups
                 else:
                     continue
-                
+
                 try:
                     page = int(page_str)
                     valid_page = 1 <= page <= 2000
@@ -53,7 +53,7 @@ class BaseTOCExtractor(ABC):  # Abstraction
                             page=page,
                             level=level,
                             parent_id=None,
-                            tags=[]
+                            tags=[],
                         )
                 except ValueError:
                     pass
@@ -62,14 +62,15 @@ class BaseTOCExtractor(ABC):  # Abstraction
 
 class TOCExtractor(BaseTOCExtractor):  # Inheritance
     """PDF TOC extractor (Inheritance, Polymorphism)."""
-    
+
     def extract_toc(self, source: Path) -> List[TOCEntry]:  # Polymorphism
         content = self._get_content(source)
         return self._extract_entries(content)
-    
+
     def _get_content(self, pdf_path: Path) -> str:  # Encapsulation
         try:
             import fitz  # type: ignore
+
             doc: Any = fitz.open(str(pdf_path))  # type: ignore
             doc_length: int = len(doc)  # type: ignore
             content = "".join(
@@ -80,14 +81,15 @@ class TOCExtractor(BaseTOCExtractor):  # Inheritance
             return content
         except Exception as e:
             import logging
+
             logging.getLogger(__name__).warning(f"PDF read error: {e}")
             return ""
-    
+
     def _extract_entries(self, content: str) -> List[TOCEntry]:
         """Extract TOC entries from content (Encapsulation)."""
         entries: List[TOCEntry] = []
         counter, in_toc = 1, False
-        
+
         for line in content.split("\n"):
             line = line.strip()
             if len(line) < 5:
@@ -95,9 +97,7 @@ class TOCExtractor(BaseTOCExtractor):  # Inheritance
             if "contents" in line.lower():
                 in_toc = True
                 continue
-            if not in_toc and not any(
-                p in line for p in ["...", "  "]
-            ):
+            if not in_toc and not any(p in line for p in ["...", "  "]):
                 continue
             entry = self._parse_line(line, counter)
             if entry:

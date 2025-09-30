@@ -9,7 +9,7 @@ from src.validation_generator import XLSValidator
 class BaseValidationTest(ABC):  # Abstraction
     def __init__(self):
         self._validator = None  # Encapsulation
-    
+
     @abstractmethod  # Abstraction
     def test_validation(self) -> bool:
         pass
@@ -19,13 +19,13 @@ class XLSValidationTest(BaseValidationTest):  # Inheritance
     def __init__(self):
         super().__init__()
         self._validator = XLSValidator(Path("outputs"))
-    
+
     def test_validation(self) -> bool:  # Polymorphism
         try:
             # Mock data
             toc_data = [{"section_id": "1", "title": "Test"}]
             spec_data = [{"section_id": "1", "content": "Test content"}]
-            
+
             result = self._validator.generate_validation(toc_data, spec_data)
             return result.exists()
         except Exception:

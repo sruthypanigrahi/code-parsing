@@ -17,11 +17,11 @@ class PDFNotFoundError(Exception):  # Encapsulation
 
 class BaseExtractor:  # Abstraction
     """Base extractor (Abstraction, Encapsulation)."""
-    
+
     def __init__(self, pdf_path: Path):
         self._pdf_path = self._validate_path(pdf_path)  # Encapsulation
         self._logger = logging.getLogger(__name__)  # Encapsulation
-    
+
     def _validate_path(self, path: Path) -> Path:  # Encapsulation
         if not path.exists():
             raise PDFNotFoundError(f"PDF not found: {path}")
@@ -36,8 +36,10 @@ class BaseExtractor:  # Abstraction
 
 class FrontPageExtractor(BaseExtractor):  # Inheritance
     """Front page extractor (Inheritance, Polymorphism)."""
-    
-    def extract_pages(self, max_pages: Optional[int] = 10) -> Iterator[str]:  # Polymorphism
+
+    def extract_pages(
+        self, max_pages: Optional[int] = 10
+    ) -> Iterator[str]:  # Polymorphism
         doc: Optional[fitz.Document] = None  # type: ignore
         try:
             doc = fitz.open(str(self._pdf_path))  # type: ignore
@@ -59,21 +61,24 @@ class FrontPageExtractor(BaseExtractor):  # Inheritance
 
 class TitleExtractor(BaseExtractor):  # Inheritance
     """Title extractor (Inheritance, Polymorphism)."""
-    
+
     def get_title(self) -> str:  # Polymorphism
         try:
             with fitz.open(str(self._pdf_path)) as doc:  # type: ignore
                 metadata = doc.metadata  # type: ignore
                 title = metadata.get("title") if metadata else None  # type: ignore
-                return title if isinstance(title, str) else "USB Power Delivery Specification"
+                return (
+                    title
+                    if isinstance(title, str)
+                    else "USB Power Delivery Specification"
+                )
         except (fitz.FileDataError, fitz.FileNotFoundError, OSError) as e:  # type: ignore
             self._logger.warning(f"Cannot read PDF metadata: {e}")
             return "USB Power Delivery Specification"
 
 
 # Factory functions (Abstraction)
-def extract_front_pages(pdf_path: Path, 
-                       max_pages: Optional[int] = 10) -> Iterator[str]:
+def extract_front_pages(pdf_path: Path, max_pages: Optional[int] = 10) -> Iterator[str]:
     return FrontPageExtractor(pdf_path).extract_pages(max_pages)
 
 

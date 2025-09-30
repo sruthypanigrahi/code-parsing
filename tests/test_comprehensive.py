@@ -8,10 +8,10 @@ from src.models import BaseContent, PageContent
 
 class BaseTestCase(ABC):  # Abstraction
     """Abstract test base (Abstraction, Encapsulation)."""
-    
+
     def __init__(self):
         self._passed = 0  # Encapsulation
-    
+
     @abstractmethod  # Abstraction
     def run_tests(self) -> bool:
         pass
@@ -19,7 +19,7 @@ class BaseTestCase(ABC):  # Abstraction
 
 class ConfigTests(BaseTestCase):  # Inheritance
     """Config tests (Inheritance, Polymorphism)."""
-    
+
     def run_tests(self) -> bool:  # Polymorphism
         config = Config("application.yml")
         pdf_file = config.pdf_input_file
@@ -28,23 +28,25 @@ class ConfigTests(BaseTestCase):  # Inheritance
 
 class ModelTests(BaseTestCase):  # Inheritance
     """Model tests (Inheritance, Polymorphism)."""
-    
+
     def run_tests(self) -> bool:  # Polymorphism
         # Test inheritance and polymorphism
-        page = PageContent(page=1, content="test", text="t", image_count=0, table_count=0)
+        page = PageContent(
+            page=1, content="test", text="t", image_count=0, table_count=0
+        )
         base: BaseContent = page  # Polymorphism demonstration
-        return base.page == 1 and hasattr(page, 'image_count')
+        return base.page == 1 and hasattr(page, "image_count")
 
 
 class TestRunner:  # Encapsulation
     """Test runner (All 4 OOP principles)."""
-    
+
     def __init__(self):
         self._tests: List[BaseTestCase] = []  # Encapsulation
-    
+
     def add_test(self, test: BaseTestCase) -> None:  # Polymorphism
         self._tests.append(test)
-    
+
     def run_all(self) -> bool:  # Abstraction
         results: List[bool] = [test.run_tests() for test in self._tests]
         return all(results)
