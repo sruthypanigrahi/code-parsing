@@ -1,69 +1,47 @@
-"""Test configuration with OOP principles."""
+"""Minimal test configuration with OOP principles."""
 
 import pytest
+from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict
-from src.config import Config
 
 
-class TestConfig:  # Encapsulation
-    """Test config helper (Encapsulation, Abstraction)."""
+class BaseFixture(ABC):  # Abstraction
+    def __init__(self):
+        self._data = {}  # Encapsulation
     
-    def __init__(self, test_data: Dict[str, Any]):
-        self._test_data = test_data  # Encapsulation
-    
-    def create_config_file(self, tmp_path: Path, filename: str = "test_config.yml") -> Path:
-        config_file = tmp_path / filename
-        config_content = "\n".join([f"{k}: {v}" for k, v in self._test_data.items()])
-        config_file.write_text(config_content)
+    @abstractmethod  # Abstraction
+    def create(self, tmp_path: Path):
+        pass
+
+
+class ConfigFixture(BaseFixture):  # Inheritance
+    def create(self, tmp_path: Path):  # Polymorphism
+        config_file = tmp_path / "test.yml"
+        config_file.write_text("pdf_input_file: test.pdf\noutput_directory: outputs")
         return config_file
-    
-    def get_test_data(self) -> Dict[str, Any]:  # Encapsulation
-        return self._test_data.copy()
 
 
-class MockPDFFile:  # Abstraction
-    """Mock PDF file helper (Abstraction, Encapsulation)."""
-    
-    def __init__(self, content: str = "Mock PDF content"):
-        self._content = content  # Encapsulation
-    
-    def create_file(self, tmp_path: Path, filename: str = "test.pdf") -> Path:
-        pdf_file = tmp_path / filename
-        pdf_file.write_text(self._content)
+class PDFFixture(BaseFixture):  # Inheritance
+    def create(self, tmp_path: Path):  # Polymorphism
+        pdf_file = tmp_path / "test.pdf"
+        pdf_file.write_text("Mock PDF")
         return pdf_file
+
+
+class FixtureFactory:  # Encapsulation
+    def __init__(self):
+        self._fixtures = {}  # Encapsulation
     
-    @property  # Encapsulation
-    def content(self) -> str:
-        return self._content
+    def register(self, name: str, fixture: BaseFixture) -> None:  # Polymorphism
+        self._fixtures[name] = fixture
+    
+    def create(self, name: str, tmp_path: Path):  # Abstraction
+        return self._fixtures[name].create(tmp_path)
 
 
-@pytest.fixture  # Factory pattern (Abstraction)
-def test_config_helper():
-    return TestConfig({
-        "pdf_input_file": "assets/test.pdf",
-        "output_directory": "test_outputs",
-        "max_pages": 50
-    })
-
-
-@pytest.fixture  # Factory pattern (Abstraction)
-def mock_pdf_helper():
-    return MockPDFFile("Sample PDF content for testing")
-
-
-@pytest.fixture  # Factory pattern (Abstraction)
-def sample_config(tmp_path: Path):
-    config_helper = TestConfig({
-        "pdf_input_file": "test.pdf",
-        "output_directory": "outputs",
-        "max_pages": 100
-    })
-    config_file = config_helper.create_config_file(tmp_path)
-    return Config(str(config_file))
-
-
-@pytest.fixture  # Factory pattern (Abstraction)
-def sample_pdf_file(tmp_path: Path):
-    pdf_helper = MockPDFFile("Test PDF content")
-    return pdf_helper.create_file(tmp_path)
+@pytest.fixture
+def fixture_factory():
+    factory = FixtureFactory()
+    factory.register("config", ConfigFixture())
+    factory.register("pdf", PDFFixture())
+    return factory

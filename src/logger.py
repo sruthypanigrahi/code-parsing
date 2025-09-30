@@ -31,31 +31,61 @@ class LoggerFactory(BaseLoggerFactory):  # Inheritance
     def create_logger(self, output_dir: Optional[Path] = None,
                      debug: bool = False) -> logging.Logger:  # Polymorphism
         logger = logging.getLogger(self._name)
-        logger.setLevel(logging.DEBUG if debug else logging.INFO)
+        log_level = logging.DEBUG if debug else logging.INFO
+        logger.setLevel(log_level)
         
         if not logger.handlers:
-            self._add_console_handler(logger, debug)
+            self._add_console_handler(logger, log_level)
             if output_dir:
-                self._add_file_handler(logger, output_dir, debug)
+                self._add_file_handler(logger, output_dir, log_level)
         return logger
     
     def _add_console_handler(self, logger: logging.Logger, 
-                           debug: bool) -> None:  # Encapsulation
+                           log_level: int) -> None:  # Encapsulation
         ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG if debug else logging.INFO)
+        ch.setLevel(log_level)
         ch.setFormatter(self._formatter)
         logger.addHandler(ch)
     
     def _add_file_handler(self, logger: logging.Logger, output_dir: Path,
-                         debug: bool) -> None:  # Encapsulation
+                         log_level: int) -> None:  # Encapsulation
         try:
-            output_dir.mkdir(parents=True, exist_ok=True)
-            fh = logging.FileHandler(output_dir / "parser.log")
-            fh.setLevel(logging.DEBUG if debug else logging.INFO)
+            safe_dir = self._validate_output_dir(output_dir)
+            # Additional security check before mkdir
+            if not safe_dir.name.replace('_', '').replace('-', '').isalnum():
+                raise ValueError(f"Invalid directory name: {safe_dir.name}")
+            safe_dir.mkdir(parents=True, exist_ok=True)
+            log_file = safe_dir / "parser.log"
+            # Validate log file path to prevent traversal
+            if not log_file.resolve().is_relative_to(safe_dir.resolve()):
+                raise ValueError(f"Log file path traversal detected")
+            fh = logging.FileHandler(log_file)
+            fh.setLevel(log_level)
             fh.setFormatter(self._formatter)
             logger.addHandler(fh)
         except (OSError, PermissionError) as e:
             logger.warning(f"Could not create file handler: {e}")
+    
+    def _validate_output_dir(self, output_dir: Path) -> Path:  # Encapsulation
+        """Validate output directory against security vulnerabilities."""
+        try:
+            # Sanitize input to prevent command injection
+            clean_path = Path(str(output_dir).replace('..', '').replace(';', '').replace('|', ''))
+            resolved_path = clean_path.resolve(strict=False)
+            working_dir = Path.cwd().resolve()
+            
+            # Prevent path traversal attacks
+            if not resolved_path.is_relative_to(working_dir):
+                raise ValueError(f"Path traversal detected: {output_dir}")
+            
+            # Additional security check for suspicious patterns
+            path_str = str(resolved_path)
+            if any(char in path_str for char in ['&', '`', '$', '(', ')', '<', '>']):
+                raise ValueError(f"Suspicious characters in path: {output_dir}")
+            
+            return resolved_path
+        except (OSError, ValueError) as e:
+            raise ValueError(f"Invalid output directory: {output_dir} - {e}") from e
 
 
 def get_logger(name: str = "usb_pd_parser", output_dir: Optional[Path] = None,

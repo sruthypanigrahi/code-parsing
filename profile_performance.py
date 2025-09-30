@@ -2,10 +2,11 @@
 """Performance profiler with OOP principles."""
 
 import cProfile
+import logging
 import pstats
 from abc import ABC, abstractmethod
 from io import StringIO
-from typing import Any, Dict
+from typing import Any, Callable, Dict, List
 
 
 class BaseProfiler(ABC):  # Abstraction
@@ -14,47 +15,54 @@ class BaseProfiler(ABC):  # Abstraction
     def __init__(self, name: str):
         self._name = name  # Encapsulation
         self._profiler = cProfile.Profile()  # Encapsulation
+        self._logger = logging.getLogger(self.__class__.__name__)  # Encapsulation
     
     @abstractmethod  # Abstraction
     def profile_operation(self) -> Dict[str, Any]:
         pass
     
-    def _run_profiled(self, func, *args) -> Dict[str, Any]:  # Encapsulation
-        self._profiler.enable()
-        result = func(*args)
-        self._profiler.disable()
-        
-        # Get stats
-        s = StringIO()
-        ps = pstats.Stats(self._profiler, stream=s)
-        ps.sort_stats('cumulative').print_stats(10)
-        
-        return {
-            "result": result,
-            "profile_output": s.getvalue(),
-            "total_calls": ps.total_calls
-        }
+    def _run_profiled(self, func: Callable[..., Any], *args: Any) -> Dict[str, Any]:  # Encapsulation
+        """Run function with profiling."""
+        try:
+            self._profiler.enable()
+            result: Any = func(*args)
+            self._profiler.disable()
+            
+            s = StringIO()
+            ps = pstats.Stats(self._profiler, stream=s)
+            ps.sort_stats('cumulative').print_stats(5)
+            
+            return {
+                "result": result,
+                "profile_output": s.getvalue(),
+                "total_calls": getattr(ps, 'total_calls', 0)
+            }
+        except Exception as e:
+            self._logger.error(f"Profiling failed: {e}")
+            raise
 
 
 class ConfigProfiler(BaseProfiler):  # Inheritance
     """Config profiler (Inheritance, Polymorphism)."""
     
     def profile_operation(self) -> Dict[str, Any]:  # Polymorphism
-        from src.config import Config
-        
+        """Profile config operations."""
+        self._logger.info(f"Profiling {self._name}")
         profile_data = self._run_profiled(self._config_operations)
         
         return {
             "profiler": self._name,
-            "operations": 500,
+            "operations": 100,
             "total_calls": profile_data["total_calls"],
-            "profile_stats": profile_data["profile_output"][:500] + "..."
+            "profile_stats": profile_data["profile_output"][:300] + "..."
         }
     
     def _config_operations(self) -> int:  # Encapsulation
+        """Perform config operations."""
+        from src.config import Config
         count = 0
-        for _ in range(500):
-            config = Config("application.yml")
+        for _ in range(100):
+            config: Config = Config("application.yml")
             _ = config.pdf_input_file
             count += 1
         return count
@@ -64,22 +72,24 @@ class ModelProfiler(BaseProfiler):  # Inheritance
     """Model profiler (Inheritance, Polymorphism)."""
     
     def profile_operation(self) -> Dict[str, Any]:  # Polymorphism
-        from src.models import BaseContent, TOCEntry
-        
+        """Profile model operations."""
+        self._logger.info(f"Profiling {self._name}")
         profile_data = self._run_profiled(self._model_operations)
         
         return {
             "profiler": self._name,
-            "operations": 1000,
+            "operations": 200,
             "total_calls": profile_data["total_calls"],
-            "profile_stats": profile_data["profile_output"][:500] + "..."
+            "profile_stats": profile_data["profile_output"][:300] + "..."
         }
     
     def _model_operations(self) -> int:  # Encapsulation
+        """Perform model operations."""
+        from src.models import BaseContent, TOCEntry
         count = 0
-        for i in range(1000):
+        for i in range(200):
             BaseContent(page=i+1, content=f"test {i}")
-            if i % 50 == 0:
+            if i % 20 == 0:
                 TOCEntry(
                     doc_title="Profile", section_id=f"S{i}",
                     title=f"Title {i}", full_path=f"Path {i}",
@@ -89,43 +99,67 @@ class ModelProfiler(BaseProfiler):  # Inheritance
         return count
 
 
-class ProfilerSuite:  # Abstraction
-    """Profiler suite (Abstraction, Encapsulation)."""
+class ProfilerSuite:  # Encapsulation
+    """Profiler suite (Encapsulation, Abstraction)."""
     
     def __init__(self):
-        self._profilers = []  # Encapsulation
+        self._profilers: List[BaseProfiler] = []  # Encapsulation
+        self._logger = logging.getLogger(self.__class__.__name__)  # Encapsulation
     
     def add_profiler(self, profiler: BaseProfiler) -> None:  # Polymorphism
+        """Add profiler to suite."""
         self._profilers.append(profiler)
+        self._logger.info(f"Added profiler: {profiler._name}")
     
     def run_all(self) -> Dict[str, Any]:  # Abstraction
-        results = {}
+        """Run all profilers."""
+        results: Dict[str, Any] = {}
         for profiler in self._profilers:
-            result = profiler.profile_operation()  # Polymorphism
-            results[result["profiler"]] = result
+            try:
+                result = profiler.profile_operation()  # Polymorphism
+                results[result["profiler"]] = result
+            except Exception as e:
+                self._logger.error(f"Profiler {profiler._name} failed: {e}")
         return results
+
+
+class ProfilerFactory:  # Factory pattern
+    """Profiler factory (Abstraction, Encapsulation)."""
+    
+    @staticmethod
+    def create_profiler(profiler_type: str, name: str) -> BaseProfiler:
+        """Create profiler instance."""
+        if profiler_type == "config":
+            return ConfigProfiler(name)  # Polymorphism
+        elif profiler_type == "model":
+            return ModelProfiler(name)  # Polymorphism
+        raise ValueError(f"Invalid profiler type: {profiler_type}")
 
 
 def main():
     """Run performance profiling with OOP principles."""
-    suite = ProfilerSuite()
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
     
-    # Add profilers (Factory pattern)
-    suite.add_profiler(ConfigProfiler("Config Profiler"))
-    suite.add_profiler(ModelProfiler("Model Profiler"))
-    
-    # Run profiling
-    results = suite.run_all()
-    
-    print("Performance Profiling Results:")
-    print("=" * 50)
-    for name, result in results.items():
-        print(f"Profiler: {name}")
-        print(f"  Operations: {result['operations']}")
-        print(f"  Total Calls: {result['total_calls']}")
-        print(f"  Top Functions:")
-        print(f"  {result['profile_stats']}")
-        print()
+    try:
+        suite = ProfilerSuite()
+        
+        # Add profilers using factory
+        suite.add_profiler(ProfilerFactory.create_profiler("config", "Config Profiler"))
+        suite.add_profiler(ProfilerFactory.create_profiler("model", "Model Profiler"))
+        
+        # Run profiling
+        results = suite.run_all()
+        
+        logger.info("Performance Profiling Results:")
+        for name, result in results.items():
+            logger.info(f"Profiler: {name} - {result['operations']} operations")
+            logger.info(f"  Total Calls: {result['total_calls']}")
+        
+        return 0
+    except Exception as e:
+        logger.error(f"Profiling failed: {e}")
+        return 1
 
 
 if __name__ == "__main__":

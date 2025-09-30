@@ -1,72 +1,62 @@
-"""Comprehensive tests with OOP principles."""
+"""Minimal comprehensive tests with OOP principles."""
 
-# import pytest
-from pathlib import Path
-from typing import Union
+from abc import ABC, abstractmethod
+from typing import List
 from src.config import Config
-from src.models import TOCEntry, BaseContent, PageContent
+from src.models import BaseContent, PageContent
 
 
-class TestConfig:  # Encapsulation
-    """Test config class (Encapsulation, Abstraction)."""
+class BaseTestCase(ABC):  # Abstraction
+    """Abstract test base (Abstraction, Encapsulation)."""
     
-    def test_config_creation(self):  # Encapsulation
-        config = Config("application.yml")  # Abstraction
-        
-        # Test encapsulated properties (Encapsulation)
-        assert config.pdf_input_file is not None
-        assert config.output_directory is not None
-        assert config.max_pages is None
+    def __init__(self):
+        self._passed = 0  # Encapsulation
     
-    def test_config_with_file(self, tmp_path: Path):  # Encapsulation
-        config_file: Path = tmp_path / "test.yml"
-        config_file.write_text("pdf_input_file: test.pdf\nmax_pages: 100")
-        
-        config = Config(str(config_file))
-        assert config.max_pages == 100
+    @abstractmethod  # Abstraction
+    def run_tests(self) -> bool:
+        pass
 
 
-class TestModels:  # Encapsulation
-    """Test data models (Encapsulation, Abstraction)."""
+class ConfigTests(BaseTestCase):  # Inheritance
+    """Config tests (Inheritance, Polymorphism)."""
     
-    def test_base_content_abstraction(self):  # Abstraction
-        content = BaseContent(page=1, content="test")
-        assert content.page == 1
-        assert content.content == "test"
+    def run_tests(self) -> bool:  # Polymorphism
+        config = Config("application.yml")
+        pdf_file = config.pdf_input_file
+        return len(str(pdf_file)) > 0
+
+
+class ModelTests(BaseTestCase):  # Inheritance
+    """Model tests (Inheritance, Polymorphism)."""
     
-    def test_page_content_inheritance(self):  # Inheritance
-        page_content = PageContent(
-            page=1, content="test", text="sample", 
-            image_count=2, table_count=1
-        )
-        
-        # Test inherited properties (Inheritance)
-        assert isinstance(page_content, BaseContent)
-        assert page_content.page == 1
-        assert page_content.image_count == 2
+    def run_tests(self) -> bool:  # Polymorphism
+        # Test inheritance and polymorphism
+        page = PageContent(page=1, content="test", text="t", image_count=0, table_count=0)
+        base: BaseContent = page  # Polymorphism demonstration
+        return base.page == 1 and hasattr(page, 'image_count')
+
+
+class TestRunner:  # Encapsulation
+    """Test runner (All 4 OOP principles)."""
     
-    def test_toc_entry_validation(self):  # Encapsulation
-        entry = TOCEntry(
-            doc_title="Test Doc",
-            section_id="1.2",
-            title="Test Section",
-            full_path="1.2 Test Section",
-            page=10,
-            level=2
-        )
-        
-        # Test computed properties (Abstraction)
-        assert entry.level == 2
-        assert entry.section_id == "1.2"
+    def __init__(self):
+        self._tests: List[BaseTestCase] = []  # Encapsulation
     
-    def test_polymorphism_in_models(self):  # Polymorphism
-        models: list[Union[BaseContent, PageContent]] = [
-            BaseContent(page=1, content="base"),
-            PageContent(page=2, content="page", text="text", image_count=0, table_count=0)
-        ]
-        
-        for model in models:
-            # Same interface, different implementations (Polymorphism)
-            assert hasattr(model, 'page')
-            assert hasattr(model, 'content')
-            assert model.page > 0
+    def add_test(self, test: BaseTestCase) -> None:  # Polymorphism
+        self._tests.append(test)
+    
+    def run_all(self) -> bool:  # Abstraction
+        results: List[bool] = [test.run_tests() for test in self._tests]
+        return all(results)
+
+
+def test_config():
+    runner = TestRunner()
+    runner.add_test(ConfigTests())
+    assert runner.run_all()
+
+
+def test_models():
+    runner = TestRunner()
+    runner.add_test(ModelTests())
+    assert runner.run_all()

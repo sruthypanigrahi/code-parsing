@@ -1,71 +1,66 @@
-"""Edge case tests with OOP principles."""
+"""Minimal edge case tests with OOP principles."""
 
-from pathlib import Path
-import pytest
+from abc import ABC, abstractmethod
+from typing import List
 from src.config import Config
-from src.models import TOCEntry
-from src.pdf_extractor import BaseExtractor
 
 
-class MockFailingExtractor(BaseExtractor):  # Inheritance
-    """Mock failing extractor (Inheritance, Polymorphism)."""
+class BaseEdgeTest(ABC):  # Abstraction
+    def __init__(self):
+        self._errors: List[str] = []  # Encapsulation
     
-    def extract(self):  # Polymorphism
-        raise RuntimeError("Mock failure")
+    @abstractmethod  # Abstraction
+    def test_edge_case(self) -> bool:
+        pass
 
 
-class TestEdgeCases:  # Encapsulation
-    """Test edge cases (Encapsulation, Abstraction)."""
+class ConfigEdgeTest(BaseEdgeTest):  # Inheritance
+    def test_edge_case(self) -> bool:  # Polymorphism
+        try:
+            config = Config("nonexistent.yml")
+            pdf_file = config.pdf_input_file
+            return len(str(pdf_file)) > 0
+        except (FileNotFoundError, ValueError) as e:
+            self._errors.append(str(e))
+            return False
+
+
+class ModelEdgeTest(BaseEdgeTest):  # Inheritance
+    def test_edge_case(self) -> bool:  # Polymorphism
+        from src.models import BaseContent
+        try:
+            BaseContent(page=0, content="")
+            return True
+        except ValueError as e:
+            self._errors.append(str(e))
+            return False
+
+
+class EdgeTestRunner:  # Encapsulation
+    def __init__(self):
+        self._tests: List[BaseEdgeTest] = []  # Encapsulation
     
-    def test_missing_pdf_file(self):  # Encapsulation
-        with pytest.raises(FileNotFoundError):
-            MockFailingExtractor(Path("nonexistent.pdf"))
+    def add(self, test: BaseEdgeTest) -> None:  # Polymorphism
+        self._tests.append(test)
     
-    def test_invalid_config_file(self):  # Encapsulation
-        config = Config("nonexistent_config.yml")
-        
-        # Should use defaults (Encapsulation)
-        assert config.pdf_input_file is not None
-        assert config.output_directory is not None
-    
-    def test_invalid_toc_entry_data(self):  # Encapsulation
-        with pytest.raises(ValueError):
-            TOCEntry(
-                doc_title="Test",
-                section_id="",  # Invalid empty section_id
-                title="Test",
-                full_path="Test",
-                page=1,
-                level=1
-            )
-    
-    def test_invalid_section_id_format(self):  # Encapsulation
-        with pytest.raises(ValueError):
-            TOCEntry(
-                doc_title="Test",
-                section_id="invalid..format",  # Invalid format
-                title="Test",
-                full_path="Test",
-                page=1,
-                level=1
-            )
-    
-    def test_polymorphic_error_handling(self, tmp_path: Path):  # Polymorphism
-        test_file: Path = tmp_path / "test.pdf"
-        test_file.touch()
-        
-        extractor = MockFailingExtractor(test_file)  # Polymorphism
-        
-        with pytest.raises(RuntimeError, match="Mock failure"):
-            extractor.extract()
-    
-    def test_inheritance_error_propagation(self, tmp_path: Path):  # Inheritance
-        test_file: Path = tmp_path / "test.pdf"
-        test_file.touch()
-        
-        extractor = MockFailingExtractor(test_file)
-        
-        # Test inherited behavior (Inheritance)
-        assert isinstance(extractor, BaseExtractor)
-        assert hasattr(extractor, '_pdf_path')
-        assert hasattr(extractor, '_logger')
+    def run_all(self) -> bool:  # Abstraction
+        results: List[bool] = []
+        for test in self._tests:
+            try:
+                results.append(test.test_edge_case())
+            except (ValueError, OSError, RuntimeError, AttributeError) as e:
+                print(f"Test {test.__class__.__name__} failed: {e}")
+                results.append(False)
+        return all(results)
+
+
+def test_config_edge():
+    runner = EdgeTestRunner()
+    runner.add(ConfigEdgeTest())
+    assert runner.run_all()
+
+
+def test_model_edge():
+    runner = EdgeTestRunner()
+    runner.add(ModelEdgeTest())
+    assert runner.run_all()

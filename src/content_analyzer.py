@@ -1,91 +1,52 @@
-"""Content analysis with OOP principles."""
+"""Minimal content analyzer with OOP principles."""
 
+import re
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Iterator
 
 
 class BaseAnalyzer(ABC):  # Abstraction
-    """Abstract content analyzer."""
-    
-    @abstractmethod
+    @abstractmethod  # Abstraction
     def analyze(self, text: str) -> str:
         pass
 
 
-class ContentClassifier(BaseAnalyzer):  # Inheritance
-    """Fast content classification (Polymorphism)."""
-    
+class PatternAnalyzer(BaseAnalyzer):  # Inheritance
     def __init__(self):
-        self._patterns = {  # Encapsulation
-            "requirement": ["shall", "must", "required"],
-            "recommendation": ["may", "should", "recommended"],
-            "note": ["note:", "warning:", "caution:"],
-            "heading": ["table", "figure", "section"],
-            "technical": ["protocol", "message", "packet"],
-            "procedure": ["step", "procedure", "algorithm"]
+        patterns = {  # Encapsulation
+            "requirement": r"\b(shall|must|required)\b",
+            "definition": r":",
+            "numbered_item": r"^\d+\.",
+            "bullet_point": r"^[•\-]",
+            "table_data": r"[\|\t]{2,}"
         }
-    
-    def analyze(self, text: str) -> str:  # Polymorphism
-        text_lower = text.lower().strip()
-        
-        for content_type, keywords in self._patterns.items():
-            if any(keyword in text_lower for keyword in keywords):
-                return content_type
-        
-        return "paragraph"
-
-
-class StructuredExtractor(BaseAnalyzer):  # Inheritance
-    """Extract structured content patterns."""
+        self._compiled = {k: re.compile(v, re.I) for k, v in patterns.items()}  # Encapsulation
     
     def analyze(self, text: str) -> str:  # Polymorphism
         text = text.strip()
-        
-        if text.startswith(('1.', '2.', '3.', '4.', '5.')):
-            return "numbered_item"
-        elif text.startswith(('•', '-', 'a)', 'b)')):
-            return "bullet_point"
-        elif ':' in text and len(text.split(':')[0]) < 50:
-            return "definition"
-        elif '|' in text or text.count('\t') >= 2:
-            return "table_data"
-        
-        return "text"
+        for content_type, pattern in self._compiled.items():
+            if pattern.search(text):
+                return content_type
+        return "paragraph"
 
 
 class ContentAnalyzer:  # Composition
-    """Main analyzer using multiple strategies."""
-    
     def __init__(self):
-        self._classifier = ContentClassifier()  # Encapsulation
-        self._extractor = StructuredExtractor()
+        self._analyzer = PatternAnalyzer()  # Encapsulation
     
-    def classify_content(self, text: str) -> str:
-        """Fast content classification."""
-        # Try structured patterns first (faster)
-        struct_type = self._extractor.analyze(text)
-        if struct_type != "text":
-            return struct_type
-        
-        # Fall back to semantic classification
-        return self._classifier.analyze(text)
+    def classify(self, text: str) -> str:  # Abstraction
+        return self._analyzer.analyze(text)  # Polymorphism
     
-    def extract_structured_items(self, full_text: str, 
-                               page_num: int) -> Iterator[Dict[str, Any]]:
-        """Extract only high-value structured content."""
-        lines = full_text.split('\n')
-        
-        for i, line in enumerate(lines):
+    def extract_items(self, text: str, page: int) -> Iterator[Dict[str, Any]]:  # Abstraction
+        for i, line in enumerate(text.split('\n')):
             line = line.strip()
-            if len(line) < 10:  # Skip short lines
-                continue
-                
-            content_type = self.classify_content(line)
-            if content_type in ["numbered_item", "bullet_point", "definition"]:
-                yield {
-                    "type": content_type,
-                    "content": line,
-                    "page": page_num + 1,
-                    "block_id": f"{content_type[0]}{page_num + 1}_{i}",
-                    "bbox": []
-                }
+            if len(line) > 10:
+                content_type = self.classify(line)
+                if content_type != "paragraph":
+                    yield {
+                        "type": content_type,
+                        "content": line,
+                        "page": page + 1,
+                        "block_id": f"{content_type[0]}{page}_{i}",
+                        "bbox": []
+                    }

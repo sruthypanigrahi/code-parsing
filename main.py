@@ -44,8 +44,7 @@ class ApplicationFactory:  # Abstraction: Factory pattern
         """Create runner instance (Factory Method pattern)."""
         if runner_type == "cli":
             return CLIRunner()  # Polymorphism: returns concrete implementation
-        else:
-            return CLIRunner()  # Default implementation
+        raise ValueError(f"Invalid runner type: {runner_type}")
 
 
 def main():

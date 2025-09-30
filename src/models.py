@@ -12,9 +12,8 @@ class BaseContent(BaseModel):  # Abstraction
 
 class PageContent(BaseContent):  # Inheritance
     """Page content (Inheritance, Polymorphism)."""
-    text: str = Field()  # Encapsulation
-    image_count: int = Field(ge=0)  # Encapsulation
-    table_count: int = Field(ge=0)  # Encapsulation
+    image_count: int = Field(ge=0, description="Number of images on page")
+    table_count: int = Field(ge=0, description="Number of tables on page")
 
 
 class TOCEntry(BaseModel):  # Encapsulation

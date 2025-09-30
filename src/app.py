@@ -1,80 +1,70 @@
-"""CLI app with OOP principles."""
+"""Minimal CLI app with OOP principles."""
 
 import argparse
 import logging
 import sys
 from abc import ABC, abstractmethod
-
-
 from .pipeline_orchestrator import PipelineOrchestrator
 
 
 class BaseApp(ABC):  # Abstraction
-    """Abstract app (Abstraction, Encapsulation)."""
-    
     def __init__(self):
-        self._parser = self._create_parser()  # Encapsulation
-        self._logger = logging.getLogger(self.__class__.__name__)
+        self._logger = logging.getLogger(self.__class__.__name__)  # Encapsulation
+        logging.basicConfig(level=logging.INFO)
     
     @abstractmethod  # Abstraction
-    def _create_parser(self) -> argparse.ArgumentParser:
+    def run(self) -> None:
         pass
 
 
 class CLIApp(BaseApp):  # Inheritance
-    """CLI app (Inheritance, Polymorphism)."""
+    def __init__(self):
+        super().__init__()
+        self._parser = self._create_parser()  # Encapsulation
     
-    def _create_parser(self) -> argparse.ArgumentParser:  # Polymorphism
+    def _create_parser(self) -> argparse.ArgumentParser:  # Encapsulation
         parser = argparse.ArgumentParser(description="USB PD Parser")
         parser.add_argument("--config", default="application.yml")
-        parser.add_argument("--debug", action="store_true")
         parser.add_argument("--mode", type=int, choices=[1, 2, 3])
         parser.add_argument("--toc-only", action="store_true")
         parser.add_argument("--content-only", action="store_true")
         return parser
     
     def _get_mode(self) -> int:  # Encapsulation
-        print("\n📋 USB Power Delivery Parser\n" + "="*40)
-        print("1. Full Document\n2. First 600 Pages\n3. First 200 Pages")
-        print("="*40)
+        print("Select: 1=Full, 2=600 pages, 3=200 pages")
         while True:
             try:
-                choice = int(input("Select mode (1-3): "))
-                if choice in [1, 2, 3]:
+                choice = int(input("Mode (1-3): "))
+                if 1 <= choice <= 3:
                     return choice
+                print("Invalid choice")
             except (ValueError, KeyboardInterrupt):
-                sys.exit(0)
+                self._logger.warning("Invalid input")
+                print("Invalid choice")
+    
+    def _execute_pipeline(self, args: argparse.Namespace) -> None:
+        orchestrator = PipelineOrchestrator(args.config)
+        if args.toc_only:
+            result = orchestrator.run_toc_only()
+            self._logger.info(f"TOC entries: {len(result)}")
+        elif args.content_only:
+            result = orchestrator.run_content_only()
+            self._logger.info(f"Content items: {result}")
+        else:
+            mode = args.mode or self._get_mode()
+            result = orchestrator.run_full_pipeline(mode)
+            self._logger.info(
+                f"Pipeline completed: {result['toc_entries']} TOC entries"
+            )
     
     def run(self) -> None:  # Polymorphism
-        args = self._parser.parse_args()
         try:
-            self._execute(args)
+            args = self._parser.parse_args()
+            self._execute_pipeline(args)
         except Exception as e:
-            print(f"Error: {e}")
+            self._logger.error(f"App failed: {e}")
             sys.exit(1)
-    
-    def _execute(self, args: argparse.Namespace) -> None:  # Encapsulation
-        if not args.mode and not args.toc_only and not args.content_only:
-            args.mode = self._get_mode()
-        
-        orchestrator = PipelineOrchestrator(args.config, args.debug)
-        self._run_pipeline(orchestrator, args)
-    
-    def _run_pipeline(self, orchestrator: PipelineOrchestrator, args: argparse.Namespace) -> None:  # Encapsulation
-        if args.toc_only:
-            entries = orchestrator.run_toc_only()
-            print(f"\nTOC entries: {len(entries)}")
-        elif args.content_only:
-            count = orchestrator.run_content_only()
-            print(f"\nContent items: {count}")
-        else:
-            results = orchestrator.run_full_pipeline(args.mode or 1)
-            counts = results["spec_counts"]
-            print(f"\nPages: {counts['pages']} | "
-                  f"Paragraphs: {counts['paragraphs']} | "
-                  f"TOC: {results['toc_entries']}")
-            print(f"Files: 4 outputs generated")
 
 
 def main():
-    CLIApp().run()  # Polymorphism
+    CLIApp().run()  # Factory pattern + Polymorphism

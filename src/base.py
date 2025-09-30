@@ -26,8 +26,16 @@ class BaseWriter(ABC):
     """Abstract base class for writers (Abstraction)."""
     
     def __init__(self, output_path: Path):
-        self._output_path = output_path  # Encapsulation
-        self._output_path.parent.mkdir(exist_ok=True)
+        self._output_path = self._validate_path(output_path)  # Encapsulation
+        
+    def _validate_path(self, path: Path) -> Path:  # Encapsulation
+        """Validate and secure output path."""
+        safe_path = path.resolve()  # Prevent path traversal
+        try:
+            safe_path.parent.mkdir(parents=True, exist_ok=True)
+        except (OSError, PermissionError) as e:
+            raise RuntimeError(f"Cannot create directory {safe_path.parent}: {e}") from e
+        return safe_path
     
     @abstractmethod
     def write(self, data: Any) -> None:

@@ -39,14 +39,19 @@ class BaseTOCExtractor(ABC):  # Abstraction
                 
                 try:
                     page = int(page_str)
-                    if 1 <= page <= 2000 and len(title.strip()) >= 3:
+                    valid_page = 1 <= page <= 2000
+                    valid_title = len(title.strip()) >= 3
+                    if valid_page and valid_title:
+                        # Calculate hierarchy level based on section structure
+                        has_subsections = "." in section_id
+                        level = section_id.count(".") + 1 if has_subsections else 1
                         return TOCEntry(
                             doc_title=self._doc_title,
                             section_id=section_id,
                             title=title.strip(),
                             full_path=title.strip(),
                             page=page,
-                            level=section_id.count(".") + 1,
+                            level=level,
                             parent_id=None,
                             tags=[]
                         )
@@ -90,7 +95,9 @@ class TOCExtractor(BaseTOCExtractor):  # Inheritance
             if "contents" in line.lower():
                 in_toc = True
                 continue
-            if not in_toc and not any(p in line for p in ["...", "  "]):
+            if not in_toc and not any(
+                p in line for p in ["...", "  "]
+            ):
                 continue
             entry = self._parse_line(line, counter)
             if entry:

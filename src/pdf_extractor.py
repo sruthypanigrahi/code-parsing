@@ -35,10 +35,13 @@ class PDFExtractor(BaseExtractor):  # Inheritance
     def extract(self) -> List[Dict[str, Any]]:  # Polymorphism
         return list(self.extract_structured_content())
     
-    def extract_content(self, pdf_path: Path, 
-                       max_pages: Optional[int] = None) -> List[Dict[str, Any]]:
-        self._pdf_path = pdf_path
+    def extract_content(self, max_pages: Optional[int] = None) -> List[Dict[str, Any]]:
         return list(self.extract_structured_content(max_pages))
+    
+    def _validate_path(self, path: Path) -> Path:  # Encapsulation
+        if not path.exists():
+            raise FileNotFoundError(f"PDF not found: {path}")
+        return path.resolve()  # Prevent path traversal
     
     def extract_structured_content(self, 
                                  max_pages: Optional[int] = None
@@ -57,24 +60,28 @@ class PDFExtractor(BaseExtractor):  # Inheritance
     def _extract_page_content(self, page: Any, 
                             page_num: int) -> Iterator[Dict[str, Any]]:
         """Fast page content extraction (Encapsulation)."""
-        # Fast text extraction
-        blocks = page.get_text("dict")["blocks"]  # type: ignore
-        for block_num, block in enumerate(blocks):
-            if "lines" in block:
-                text = self._get_block_text(block)
-                if text.strip() and len(text) > 5:
-                    content_type = self._analyzer.classify_content(text)
-                    yield {
-                        "type": content_type,
-                        "content": text.strip(),
-                        "page": page_num + 1,
-                        "block_id": f"{content_type[0]}{page_num + 1}_{block_num}",
-                        "bbox": list(block.get("bbox", []))
-                    }
-        
-        # Extract high-value structured content only
-        full_text = page.get_text()  # type: ignore
-        yield from self._analyzer.extract_structured_items(full_text, page_num)
+        try:
+            blocks = page.get_text("dict")["blocks"]  # type: ignore
+            for block_num, block in enumerate(blocks):
+                if "lines" in block:
+                    text = self._get_block_text(block)
+                    if text.strip() and len(text) > 5:
+                        content_type = self._analyzer.classify(text)
+                        yield {
+                            "doc_title": "USB PD Specification",
+                            "section_id": f"{content_type[0]}{page_num + 1}_{block_num}",
+                            "title": text.strip()[:50] + "..." if len(text.strip()) > 50 else text.strip(),
+                            "content": text.strip(),
+                            "page": page_num + 1,
+                            "level": 1,
+                            "parent_id": None,
+                            "full_path": text.strip()[:50] + "..." if len(text.strip()) > 50 else text.strip(),
+                            "type": content_type,
+                            "block_id": f"{content_type[0]}{page_num + 1}_{block_num}",
+                            "bbox": list(block.get("bbox", []))
+                        }
+        except Exception as e:
+            self._logger.warning(f"Error extracting page {page_num}: {e}")
     
     def _get_block_text(self, block: Dict[str, Any]) -> str:  # Encapsulation
         return "".join(
@@ -87,26 +94,24 @@ class PDFExtractor(BaseExtractor):  # Inheritance
     
 
     
-    def _extract_tables(self, page: Any, page_num: int) -> Iterator[Dict[str, Any]]:
-        """Extract tables using pdfplumber (Encapsulation)."""
+    def _extract_tables(self, plumber_doc: Any, page_num: int) -> Iterator[Dict[str, Any]]:
+        """Extract tables using cached pdfplumber doc (Encapsulation)."""
         try:
-            import pdfplumber  # type: ignore
-            with pdfplumber.open(str(self._pdf_path)) as pdf:
-                if page_num < len(pdf.pages):
-                    plumber_page = pdf.pages[page_num]
-                    tables = plumber_page.extract_tables()
-                    for table_num, table in enumerate(tables or []):
-                        if table and len(table) > 1:
-                            table_text = "\n".join(
-                                " | ".join(str(cell or "") for cell in row) 
-                                for row in table
-                            )
-                            yield {
-                                "type": "table",
-                                "content": table_text,
-                                "page": page_num + 1,
-                                "block_id": f"tbl{page_num + 1}_{table_num}",
-                                "bbox": []
-                            }
-        except Exception:
-            pass  # Fallback gracefully if pdfplumber fails
+            if page_num < len(plumber_doc.pages):
+                plumber_page = plumber_doc.pages[page_num]
+                tables = plumber_page.extract_tables()
+                for table_num, table in enumerate(tables or []):
+                    if table and len(table) > 1:
+                        table_text = "\n".join(
+                            " | ".join(str(cell or "") for cell in row) 
+                            for row in table
+                        )
+                        yield {
+                            "type": "table",
+                            "content": table_text,
+                            "page": page_num + 1,
+                            "block_id": f"tbl{page_num + 1}_{table_num}",
+                            "bbox": []
+                        }
+        except Exception as e:
+            self._logger.warning(f"Table extraction failed: {e}")

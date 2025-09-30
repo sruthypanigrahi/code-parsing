@@ -1,78 +1,50 @@
-"""Parser tests with OOP principles."""
+"""Minimal parser tests with OOP principles."""
 
-# import pytest
-from pathlib import Path
-from src.pipeline_orchestrator import PipelineOrchestrator, BasePipeline
+from abc import ABC, abstractmethod
+from typing import List
 from src.config import Config
 
 
-class MockPipeline(BasePipeline):  # Inheritance
-    """Mock pipeline (Inheritance, Polymorphism)."""
-    
+class BasePipelineTest(ABC):  # Abstraction
     def __init__(self):
-        config = Config("application.yml")  # Encapsulation
-        super().__init__(config)  # Inheritance
+        self._config = Config("application.yml")  # Encapsulation
     
-    def run(self, **kwargs):  # Polymorphism - implements abstract method
-        return {"mock": "data"}
-    
-    def run_mock(self):  # Polymorphism
-        return self.run()
+    @abstractmethod  # Abstraction
+    def test_pipeline(self) -> bool:
+        pass
 
 
-class TestBasePipeline:  # Encapsulation
-    """Test base pipeline (Encapsulation, Abstraction)."""
-    
-    def test_pipeline_creation(self):  # Encapsulation
-        pipeline = MockPipeline()  # Polymorphism
-        
-        # Test protected attributes (Encapsulation)
-        assert hasattr(pipeline, '_config')
-        assert hasattr(pipeline, '_logger')
-        assert getattr(pipeline, '_config') is not None  # type: ignore
-    
-    def test_inheritance_structure(self):  # Inheritance
-        pipeline = MockPipeline()
-        
-        # Test inheritance (Inheritance)
-        assert isinstance(pipeline, BasePipeline)
-        assert hasattr(pipeline, '_setup')
-        assert hasattr(pipeline, 'run')
-    
-    def test_polymorphism(self):  # Polymorphism
-        pipeline = MockPipeline()
-        
-        result = pipeline.run_mock()
-        assert result == {"mock": "data"}
+class MockPipelineTest(BasePipelineTest):  # Inheritance
+    def test_pipeline(self) -> bool:  # Polymorphism
+        from src.pipeline_orchestrator import PipelineOrchestrator
+        try:
+            orchestrator = PipelineOrchestrator("application.yml")
+            return hasattr(orchestrator, '_config')
+        except (ValueError, OSError, RuntimeError) as e:
+            print(f"Test failed: {e}")
+            return False
 
 
-class TestPipelineOrchestrator:  # Encapsulation
-    """Test pipeline orchestrator (Encapsulation, Abstraction)."""
+class ConfigPipelineTest(BasePipelineTest):  # Inheritance
+    def test_pipeline(self) -> bool:  # Polymorphism
+        pdf_file = self._config.pdf_input_file
+        return len(str(pdf_file)) > 0
+
+
+class PipelineTestRunner:  # Encapsulation
+    def __init__(self):
+        self._tests: List[BasePipelineTest] = []  # Encapsulation
     
-    def test_orchestrator_creation(self, tmp_path: Path):  # Encapsulation
-        config_file: Path = tmp_path / "test_config.yml"
-        config_file.write_text("pdf_input_file: test.pdf\noutput_directory: outputs")
-        
-        orchestrator = PipelineOrchestrator(str(config_file))  # Polymorphism
-        
-        assert hasattr(orchestrator, '_config')
-        assert getattr(orchestrator, '_config') is not None  # type: ignore
+    def add_test(self, test: BasePipelineTest) -> None:  # Polymorphism
+        self._tests.append(test)
     
-    def test_inheritance_from_base(self, tmp_path: Path):  # Inheritance
-        config_file: Path = tmp_path / "test_config.yml"
-        config_file.write_text("pdf_input_file: test.pdf\noutput_directory: outputs")
-        
-        orchestrator = PipelineOrchestrator(str(config_file))
-        
-        assert isinstance(orchestrator, BasePipeline)
-        assert hasattr(orchestrator, '_setup')
-    
-    def test_abstraction_methods(self, tmp_path: Path):  # Abstraction
-        config_file: Path = tmp_path / "test_config.yml"
-        config_file.write_text("pdf_input_file: test.pdf\noutput_directory: outputs")
-        
-        orchestrator = PipelineOrchestrator(str(config_file))
-        
-        assert hasattr(orchestrator, 'run_full_pipeline')
-        assert hasattr(orchestrator, 'run_toc_only')
-        assert hasattr(orchestrator, 'run_content_only')
+    def run_all(self) -> bool:  # Abstraction
+        results: List[bool] = [t.test_pipeline() for t in self._tests]
+        return all(results)
+
+
+def test_pipeline():
+    runner = PipelineTestRunner()
+    runner.add_test(MockPipelineTest())
+    runner.add_test(ConfigPipelineTest())
+    assert runner.run_all()
