@@ -66,13 +66,14 @@ class TOCExtractor(BaseTOCExtractor):  # Inheritance
         try:
             import fitz  # type: ignore
             doc: Any = fitz.open(str(pdf_path))  # type: ignore
-            content = ""
-            for page_num in range(min(20, len(doc))):  # type: ignore
-                content += str(doc[page_num].get_text())  # type: ignore
+            doc_length: int = len(doc)  # type: ignore
+            content = "".join(
+                str(doc[page_num].get_text())  # type: ignore
+                for page_num in range(min(20, doc_length))
+            )
             doc.close()  # type: ignore
             return content
         except Exception as e:
-            # Log the specific error instead of silent failure
             import logging
             logging.getLogger(__name__).warning(f"PDF read error: {e}")
             return ""

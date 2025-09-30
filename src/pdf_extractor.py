@@ -4,6 +4,7 @@ import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
+from .content_analyzer import ContentAnalyzer
 
 
 class BaseExtractor(ABC):  # Abstraction
@@ -25,7 +26,11 @@ class BaseExtractor(ABC):  # Abstraction
 
 
 class PDFExtractor(BaseExtractor):  # Inheritance
-    """PDF content extractor (Inheritance, Polymorphism)."""
+    """Fast PDF content extractor (Inheritance, Polymorphism)."""
+    
+    def __init__(self, pdf_path: Path):
+        super().__init__(pdf_path)
+        self._analyzer = ContentAnalyzer()  # Composition
     
     def extract(self) -> List[Dict[str, Any]]:  # Polymorphism
         return list(self.extract_structured_content())
@@ -51,37 +56,57 @@ class PDFExtractor(BaseExtractor):  # Inheritance
     
     def _extract_page_content(self, page: Any, 
                             page_num: int) -> Iterator[Dict[str, Any]]:
-        """Extract content from page (Encapsulation)."""
+        """Fast page content extraction (Encapsulation)."""
+        # Fast text extraction
         blocks = page.get_text("dict")["blocks"]  # type: ignore
         for block_num, block in enumerate(blocks):
             if "lines" in block:
                 text = self._get_block_text(block)
-                if text.strip():
+                if text.strip() and len(text) > 5:
+                    content_type = self._analyzer.classify_content(text)
                     yield {
-                        "type": "paragraph",
+                        "type": content_type,
                         "content": text.strip(),
                         "page": page_num + 1,
-                        "block_id": f"p{page_num + 1}_{block_num}",
+                        "block_id": f"{content_type[0]}{page_num + 1}_{block_num}",
                         "bbox": list(block.get("bbox", []))
                     }
-            elif "image" in block:
-                bbox = block.get("bbox", [0, 0, 0, 0])
-                width, height = bbox[2] - bbox[0], bbox[3] - bbox[1]
-                if width > 10 and height > 10:
-                    yield {
-                        "type": "image",
-                        "content": f"[Image {width:.0f}x{height:.0f}]",
-                        "page": page_num + 1,
-                        "block_id": f"img{page_num + 1}_{block_num}",
-                        "bbox": list(bbox)
-                    }
+        
+        # Extract high-value structured content only
+        full_text = page.get_text()  # type: ignore
+        yield from self._analyzer.extract_structured_items(full_text, page_num)
     
     def _get_block_text(self, block: Dict[str, Any]) -> str:  # Encapsulation
-        text = ""
-        for line in block["lines"]:  # type: ignore
-            for span in line["spans"]:  # type: ignore
-                text += str(span["text"])  # type: ignore
-        return text
+        return "".join(
+            str(span["text"]) 
+            for line in block["lines"] 
+            for span in line["spans"]
+        )
     
-    def _is_table_line(self, line: str) -> bool:  # Encapsulation
-        return ("Table" in line or "|" in line or line.count("  ") >= 3)
+
+    
+
+    
+    def _extract_tables(self, page: Any, page_num: int) -> Iterator[Dict[str, Any]]:
+        """Extract tables using pdfplumber (Encapsulation)."""
+        try:
+            import pdfplumber  # type: ignore
+            with pdfplumber.open(str(self._pdf_path)) as pdf:
+                if page_num < len(pdf.pages):
+                    plumber_page = pdf.pages[page_num]
+                    tables = plumber_page.extract_tables()
+                    for table_num, table in enumerate(tables or []):
+                        if table and len(table) > 1:
+                            table_text = "\n".join(
+                                " | ".join(str(cell or "") for cell in row) 
+                                for row in table
+                            )
+                            yield {
+                                "type": "table",
+                                "content": table_text,
+                                "page": page_num + 1,
+                                "block_id": f"tbl{page_num + 1}_{table_num}",
+                                "bbox": []
+                            }
+        except Exception:
+            pass  # Fallback gracefully if pdfplumber fails

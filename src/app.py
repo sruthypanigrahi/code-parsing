@@ -5,6 +5,7 @@ import logging
 import sys
 from abc import ABC, abstractmethod
 
+
 from .pipeline_orchestrator import PipelineOrchestrator
 
 
@@ -47,27 +48,32 @@ class CLIApp(BaseApp):  # Inheritance
     def run(self) -> None:  # Polymorphism
         args = self._parser.parse_args()
         try:
-            if not args.mode and not args.toc_only and not args.content_only:
-                args.mode = self._get_mode()
-            
-            orchestrator = PipelineOrchestrator(args.config, args.debug)
-            
-            if args.toc_only:
-                entries = orchestrator.run_toc_only()
-                print(f"\nTOC entries: {len(entries)}")
-            elif args.content_only:
-                count = orchestrator.run_content_only()
-                print(f"\nContent items: {count}")
-            else:
-                results = orchestrator.run_full_pipeline(args.mode or 1)
-                counts = results["spec_counts"]
-                print(f"\nPages: {counts['pages']} | "
-                      f"Paragraphs: {counts['paragraphs']} | "
-                      f"TOC: {results['toc_entries']}")
-                print(f"Files: 4 outputs generated")
+            self._execute(args)
         except Exception as e:
             print(f"Error: {e}")
             sys.exit(1)
+    
+    def _execute(self, args: argparse.Namespace) -> None:  # Encapsulation
+        if not args.mode and not args.toc_only and not args.content_only:
+            args.mode = self._get_mode()
+        
+        orchestrator = PipelineOrchestrator(args.config, args.debug)
+        self._run_pipeline(orchestrator, args)
+    
+    def _run_pipeline(self, orchestrator: PipelineOrchestrator, args: argparse.Namespace) -> None:  # Encapsulation
+        if args.toc_only:
+            entries = orchestrator.run_toc_only()
+            print(f"\nTOC entries: {len(entries)}")
+        elif args.content_only:
+            count = orchestrator.run_content_only()
+            print(f"\nContent items: {count}")
+        else:
+            results = orchestrator.run_full_pipeline(args.mode or 1)
+            counts = results["spec_counts"]
+            print(f"\nPages: {counts['pages']} | "
+                  f"Paragraphs: {counts['paragraphs']} | "
+                  f"TOC: {results['toc_entries']}")
+            print(f"Files: 4 outputs generated")
 
 
 def main():
