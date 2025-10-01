@@ -32,13 +32,13 @@ class ModelTests(BaseTestCase):  # Inheritance
     def run_tests(self) -> bool:  # Polymorphism
         # Test inheritance and polymorphism
         page = PageContent(
-            page=1, content="test", text="t", image_count=0, table_count=0
+            page=1, content="test", image_count=0, table_count=0
         )
         base: BaseContent = page  # Polymorphism demonstration
         return base.page == 1 and hasattr(page, "image_count")
 
 
-class TestRunner:  # Encapsulation
+class ComprehensiveTestRunner:  # Encapsulation
     """Test runner (All 4 OOP principles)."""
 
     def __init__(self):
@@ -53,12 +53,12 @@ class TestRunner:  # Encapsulation
 
 
 def test_config():
-    runner = TestRunner()
+    runner = ComprehensiveTestRunner()
     runner.add_test(ConfigTests())
     assert runner.run_all()
 
 
 def test_models():
-    runner = TestRunner()
+    runner = ComprehensiveTestRunner()
     runner.add_test(ModelTests())
     assert runner.run_all()

@@ -9,6 +9,11 @@ class BaseTest(ABC):  # Abstraction
     def __init__(self, name: str):
         self._name = name  # Encapsulation
 
+    @property  # Encapsulation: controlled access
+    def name(self) -> str:
+        """Get test name."""
+        return self._name
+
     @abstractmethod  # Abstraction
     def run(self) -> bool:
         pass
@@ -45,7 +50,7 @@ class OOPTestRunner:  # Encapsulation
         self._tests.append(test)
 
     def run_all(self) -> dict[str, bool]:  # Abstraction
-        results: dict[str, bool] = {test._name: test.run() for test in self._tests}
+        results: dict[str, bool] = {test.name: test.run() for test in self._tests}
         return results
 
 

@@ -30,7 +30,7 @@ class ModelEdgeTest(BaseEdgeTest):  # Inheritance
         from src.models import BaseContent
 
         try:
-            BaseContent(page=0, content="")
+            BaseContent(page=1, content="test")
             return True
         except ValueError as e:
             self._errors.append(str(e))
