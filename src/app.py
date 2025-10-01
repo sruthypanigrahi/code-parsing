@@ -11,7 +11,7 @@ from .pipeline_orchestrator import PipelineOrchestrator
 
 class BaseApp(ABC):  # Abstraction
     def __init__(self):
-        self._logger = logging.getLogger(self.__class__.__name__)  # Encapsulation
+        self._logger = logging.getLogger(self.__class__.__name__)
         logging.basicConfig(level=logging.INFO)
 
     @abstractmethod  # Abstraction
@@ -60,20 +60,19 @@ class CLIApp(BaseApp):  # Inheritance
         if args.toc_only:
             result = orchestrator.run_toc_only()
             self._logger.info(
-                f"TOC extraction completed: {len(result)} entries extracted successfully"
+                f"TOC extraction completed: {len(result)} entries extracted"
             )
         elif args.content_only:
             result = orchestrator.run_content_only()
-            self._logger.info(
-                f"Content extraction completed: {result} items processed successfully"
-            )
+            self._logger.info(f"Content extraction completed: {result} items processed")
         else:
             mode = args.mode or self._get_mode()
             result = orchestrator.run_full_pipeline(mode)
+            toc_count = result["toc_entries"]
+            content_count = result["spec_counts"]["content_items"]
             self._logger.info(
-                f"Processing completed successfully: "
-                f"{result['toc_entries']} TOC entries extracted, "
-                f"{result['spec_counts']['content_items']} content items processed"
+                f"Processing completed successfully: {toc_count} TOC entries "
+                f"extracted, {content_count} content items processed"
             )
 
     def run(self) -> None:  # Polymorphism
