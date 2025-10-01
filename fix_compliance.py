@@ -2,7 +2,8 @@
 
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
+
 from src.report_generator import ReportFactory
 
 
@@ -11,14 +12,14 @@ def fix_compliance():
     outputs_dir = Path("outputs")
 
     # Count content types from JSONL
-    content_types: Dict[str, int] = {}
+    content_types: dict[str, int] = {}
     total_items = 0
 
     try:
         with open(outputs_dir / "usb_pd_spec.jsonl", encoding="utf-8") as f:
             for line in f:
                 try:
-                    item: Dict[str, Any] = json.loads(line.strip())
+                    item: dict[str, Any] = json.loads(line.strip())
                     content_type: str = item.get("type", "unknown")
                     content_types[content_type] = content_types.get(content_type, 0) + 1
                     total_items += 1
@@ -29,7 +30,7 @@ def fix_compliance():
         return
 
     # Generate summary data
-    data: Dict[str, Any] = {
+    data: dict[str, Any] = {
         "total_pages": 1047,
         "toc_entries": 369,
         "content_items": total_items,

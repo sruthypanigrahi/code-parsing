@@ -3,7 +3,8 @@
 import re
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, Optional
+
 from .models import TOCEntry
 
 
@@ -20,7 +21,7 @@ class BaseTOCExtractor(ABC):  # Abstraction
         ]
 
     @abstractmethod  # Abstraction
-    def extract_toc(self, source: Path) -> List[TOCEntry]:
+    def extract_toc(self, source: Path) -> list[TOCEntry]:
         pass
 
     def _parse_line(self, line: str, counter: int) -> Optional[TOCEntry]:
@@ -63,7 +64,7 @@ class BaseTOCExtractor(ABC):  # Abstraction
 class TOCExtractor(BaseTOCExtractor):  # Inheritance
     """PDF TOC extractor (Inheritance, Polymorphism)."""
 
-    def extract_toc(self, source: Path) -> List[TOCEntry]:  # Polymorphism
+    def extract_toc(self, source: Path) -> list[TOCEntry]:  # Polymorphism
         content = self._get_content(source)
         return self._extract_entries(content)
 
@@ -85,9 +86,9 @@ class TOCExtractor(BaseTOCExtractor):  # Inheritance
             logging.getLogger(__name__).warning(f"PDF read error: {e}")
             return ""
 
-    def _extract_entries(self, content: str) -> List[TOCEntry]:
+    def _extract_entries(self, content: str) -> list[TOCEntry]:
         """Extract TOC entries from content (Encapsulation)."""
-        entries: List[TOCEntry] = []
+        entries: list[TOCEntry] = []
         counter, in_toc = 1, False
 
         for line in content.split("\n"):

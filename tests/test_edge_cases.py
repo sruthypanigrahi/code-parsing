@@ -1,13 +1,13 @@
 """Minimal edge case tests with OOP principles."""
 
 from abc import ABC, abstractmethod
-from typing import List
+
 from src.config import Config
 
 
 class BaseEdgeTest(ABC):  # Abstraction
     def __init__(self):
-        self._errors: List[str] = []  # Encapsulation
+        self._errors: list[str] = []  # Encapsulation
 
     @abstractmethod  # Abstraction
     def test_edge_case(self) -> bool:
@@ -39,13 +39,13 @@ class ModelEdgeTest(BaseEdgeTest):  # Inheritance
 
 class EdgeTestRunner:  # Encapsulation
     def __init__(self):
-        self._tests: List[BaseEdgeTest] = []  # Encapsulation
+        self._tests: list[BaseEdgeTest] = []  # Encapsulation
 
     def add(self, test: BaseEdgeTest) -> None:  # Polymorphism
         self._tests.append(test)
 
     def run_all(self) -> bool:  # Abstraction
-        results: List[bool] = []
+        results: list[bool] = []
         for test in self._tests:
             try:
                 results.append(test.test_edge_case())

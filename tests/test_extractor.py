@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 
 
 class BaseExtractorTest(ABC):  # Abstraction
@@ -29,19 +29,19 @@ class MockExtractorTest(BaseExtractorTest):  # Inheritance
             self._result = extractor.extract()
             test_file.unlink()
             return len(self._result) > 0
-        except:
+        except (OSError, ValueError, RuntimeError):
             return False
 
 
 class ExtractorTestSuite:  # Encapsulation
     def __init__(self):
-        self._tests: List[BaseExtractorTest] = []  # Encapsulation
+        self._tests: list[BaseExtractorTest] = []  # Encapsulation
 
     def add_test(self, test: BaseExtractorTest) -> None:  # Polymorphism
         self._tests.append(test)
 
     def run_all(self) -> bool:  # Abstraction
-        results: List[bool] = [t.run_test() for t in self._tests]
+        results: list[bool] = [t.run_test() for t in self._tests]
         return all(results)
 
 

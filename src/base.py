@@ -2,17 +2,17 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 
 class BaseExtractor(ABC):
     """Abstract base class for extractors (Abstraction)."""
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         self._config = config  # Encapsulation: private attribute
 
     @abstractmethod
-    def extract(self, file_path: Path) -> List[Dict[str, Any]]:
+    def extract(self, file_path: Path) -> list[dict[str, Any]]:
         """Abstract method for extraction (Abstraction)."""
         pass
 

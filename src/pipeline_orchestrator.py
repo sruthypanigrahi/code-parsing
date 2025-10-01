@@ -1,12 +1,13 @@
 """Simple pipeline orchestrator with OOP principles."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any, Optional
+
 from .config import Config
-from .pdf_extractor import PDFExtractor
-from .toc_extractor import TOCExtractor
 from .output_writer import JSONLWriter
+from .pdf_extractor import PDFExtractor
 from .report_generator import ReportFactory
+from .toc_extractor import TOCExtractor
 
 
 class BasePipeline(ABC):  # Abstraction
@@ -28,12 +29,12 @@ class BasePipeline(ABC):  # Abstraction
             raise RuntimeError(f"Cannot create output directory: {e}") from e
 
     @abstractmethod  # Abstraction
-    def run(self, mode: int = 1) -> Dict[str, Any]:
+    def run(self, mode: int = 1) -> dict[str, Any]:
         pass
 
 
 class PipelineOrchestrator(BasePipeline):  # Inheritance
-    def run(self, mode: int = 1) -> Dict[str, Any]:  # Polymorphism
+    def run(self, mode: int = 1) -> dict[str, Any]:  # Polymorphism
         mode_names = {
             1: "Full Document",
             2: "Extended (600 pages)",
@@ -105,5 +106,5 @@ class PipelineOrchestrator(BasePipeline):  # Inheritance
     def run_content_only(self) -> int:  # Polymorphism
         return len(PDFExtractor(self._config.pdf_input_file).extract_content())
 
-    def run_full_pipeline(self, mode: int = 1) -> Dict[str, Any]:  # Polymorphism
+    def run_full_pipeline(self, mode: int = 1) -> dict[str, Any]:  # Polymorphism
         return self.run(mode)

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Minimal benchmark with OOP principles."""
 
-import time
 import logging
+import time
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any
 
 
 class BaseBenchmark(ABC):  # Abstraction
@@ -13,24 +13,24 @@ class BaseBenchmark(ABC):  # Abstraction
         self._logger = logging.getLogger(__name__)  # Encapsulation
 
     @abstractmethod  # Abstraction
-    def run(self) -> Dict[str, Any]:
+    def run(self) -> dict[str, Any]:
         pass
 
 
 class ConfigBenchmark(BaseBenchmark):  # Inheritance
-    def run(self) -> Dict[str, Any]:  # Polymorphism
+    def run(self) -> dict[str, Any]:  # Polymorphism
         from src.config import Config
 
         config = Config("application.yml")  # Create once, reuse
         start = time.perf_counter()
         for _ in range(100):
-            config.pdf_input_file
+            _ = config.pdf_input_file
         elapsed = time.perf_counter() - start
         return {"name": self._name, "time": elapsed, "ops": 100}
 
 
 class ModelBenchmark(BaseBenchmark):  # Inheritance
-    def run(self) -> Dict[str, Any]:  # Polymorphism
+    def run(self) -> dict[str, Any]:  # Polymorphism
         start = time.perf_counter()
         from src.models import BaseContent
 
@@ -42,7 +42,7 @@ class ModelBenchmark(BaseBenchmark):  # Inheritance
 
 class BenchmarkRunner:  # Encapsulation
     def __init__(self):
-        self._benchmarks: List[BaseBenchmark] = []  # Encapsulation
+        self._benchmarks: list[BaseBenchmark] = []  # Encapsulation
 
     def add(self, benchmark: BaseBenchmark) -> None:  # Polymorphism
         self._benchmarks.append(benchmark)

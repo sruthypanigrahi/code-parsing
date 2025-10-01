@@ -1,7 +1,6 @@
 """Minimal OOP tests with all 4 principles."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, List
 
 
 class BaseTest(ABC):  # Abstraction
@@ -40,13 +39,13 @@ class TestRunner:  # Encapsulation
     """Test runner (All 4 OOP principles)."""
 
     def __init__(self):
-        self._tests: List[BaseTest] = []  # Encapsulation
+        self._tests: list[BaseTest] = []  # Encapsulation
 
     def add(self, test: BaseTest) -> None:  # Polymorphism
         self._tests.append(test)
 
-    def run_all(self) -> Dict[str, bool]:  # Abstraction
-        results: Dict[str, bool] = {test._name: test.run() for test in self._tests}
+    def run_all(self) -> dict[str, bool]:  # Abstraction
+        results: dict[str, bool] = {test._name: test.run() for test in self._tests}
         return results
 
 

@@ -1,7 +1,7 @@
 """Minimal parser tests with OOP principles."""
 
 from abc import ABC, abstractmethod
-from typing import List
+
 from src.config import Config
 
 
@@ -34,13 +34,13 @@ class ConfigPipelineTest(BasePipelineTest):  # Inheritance
 
 class PipelineTestRunner:  # Encapsulation
     def __init__(self):
-        self._tests: List[BasePipelineTest] = []  # Encapsulation
+        self._tests: list[BasePipelineTest] = []  # Encapsulation
 
     def add_test(self, test: BasePipelineTest) -> None:  # Polymorphism
         self._tests.append(test)
 
     def run_all(self) -> bool:  # Abstraction
-        results: List[bool] = [t.test_pipeline() for t in self._tests]
+        results: list[bool] = [t.test_pipeline() for t in self._tests]
         return all(results)
 
 

@@ -6,7 +6,7 @@ import logging
 import pstats
 from abc import ABC, abstractmethod
 from io import StringIO
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable
 
 
 class BaseProfiler(ABC):  # Abstraction
@@ -18,12 +18,12 @@ class BaseProfiler(ABC):  # Abstraction
         self._logger = logging.getLogger(self.__class__.__name__)  # Encapsulation
 
     @abstractmethod  # Abstraction
-    def profile_operation(self) -> Dict[str, Any]:
+    def profile_operation(self) -> dict[str, Any]:
         pass
 
     def _run_profiled(
         self, func: Callable[..., Any], *args: Any
-    ) -> Dict[str, Any]:  # Encapsulation
+    ) -> dict[str, Any]:  # Encapsulation
         """Run function with profiling."""
         try:
             self._profiler.enable()
@@ -47,7 +47,7 @@ class BaseProfiler(ABC):  # Abstraction
 class ConfigProfiler(BaseProfiler):  # Inheritance
     """Config profiler (Inheritance, Polymorphism)."""
 
-    def profile_operation(self) -> Dict[str, Any]:  # Polymorphism
+    def profile_operation(self) -> dict[str, Any]:  # Polymorphism
         """Profile config operations."""
         self._logger.info(f"Profiling {self._name}")
         profile_data = self._run_profiled(self._config_operations)
@@ -74,7 +74,7 @@ class ConfigProfiler(BaseProfiler):  # Inheritance
 class ModelProfiler(BaseProfiler):  # Inheritance
     """Model profiler (Inheritance, Polymorphism)."""
 
-    def profile_operation(self) -> Dict[str, Any]:  # Polymorphism
+    def profile_operation(self) -> dict[str, Any]:  # Polymorphism
         """Profile model operations."""
         self._logger.info(f"Profiling {self._name}")
         profile_data = self._run_profiled(self._model_operations)
@@ -110,7 +110,7 @@ class ProfilerSuite:  # Encapsulation
     """Profiler suite (Encapsulation, Abstraction)."""
 
     def __init__(self):
-        self._profilers: List[BaseProfiler] = []  # Encapsulation
+        self._profilers: list[BaseProfiler] = []  # Encapsulation
         self._logger = logging.getLogger(self.__class__.__name__)  # Encapsulation
 
     def add_profiler(self, profiler: BaseProfiler) -> None:  # Polymorphism
@@ -118,9 +118,9 @@ class ProfilerSuite:  # Encapsulation
         self._profilers.append(profiler)
         self._logger.info(f"Added profiler: {profiler._name}")
 
-    def run_all(self) -> Dict[str, Any]:  # Abstraction
+    def run_all(self) -> dict[str, Any]:  # Abstraction
         """Run all profilers."""
-        results: Dict[str, Any] = {}
+        results: dict[str, Any] = {}
         for profiler in self._profilers:
             try:
                 result = profiler.profile_operation()  # Polymorphism

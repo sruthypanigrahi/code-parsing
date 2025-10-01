@@ -62,7 +62,7 @@ class LoggerFactory(BaseLoggerFactory):  # Inheritance
             log_file = safe_dir / "parser.log"
             # Validate log file path to prevent traversal
             if not log_file.resolve().is_relative_to(safe_dir.resolve()):
-                raise ValueError(f"Log file path traversal detected")
+                raise ValueError("Log file path traversal detected")
             fh = logging.FileHandler(log_file)
             fh.setLevel(log_level)
             fh.setFormatter(self._formatter)

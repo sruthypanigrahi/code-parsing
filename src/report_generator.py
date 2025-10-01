@@ -2,9 +2,10 @@
 
 import json
 from abc import ABC, abstractmethod
-from pathlib import Path
-from typing import Any, Dict, List, Tuple, Union
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Union
+
 import openpyxl
 
 
@@ -14,15 +15,15 @@ class BaseReportGenerator(ABC):  # Abstraction
         self._output_dir.mkdir(parents=True, exist_ok=True)
 
     @abstractmethod  # Abstraction
-    def generate(self, data: Dict[str, Any]) -> Path:
+    def generate(self, data: dict[str, Any]) -> Path:
         pass
 
 
 class JSONReportGenerator(BaseReportGenerator):  # Inheritance
-    def generate(self, data: Dict[str, Any]) -> Path:  # Polymorphism
+    def generate(self, data: dict[str, Any]) -> Path:  # Polymorphism
         report_file = self._output_dir / "parsing_report.json"
         try:
-            report: Dict[str, Any] = {
+            report: dict[str, Any] = {
                 "metadata": {
                     "title": "USB PD Report",
                     "generated": datetime.now().isoformat(),
@@ -37,13 +38,13 @@ class JSONReportGenerator(BaseReportGenerator):  # Inheritance
         try:
             with open(report_file, "w") as f:
                 json.dump(report, f, indent=2)
-        except (IOError, PermissionError, OSError) as e:
+        except (PermissionError, OSError) as e:
             raise RuntimeError(f"Cannot write JSON report: {e}") from e
         return report_file
 
 
 class ExcelReportGenerator(BaseReportGenerator):  # Inheritance
-    def generate(self, data: Dict[str, Any]) -> Path:  # Polymorphism
+    def generate(self, data: dict[str, Any]) -> Path:  # Polymorphism
         excel_file = self._output_dir / "validation_report.xlsx"
         try:
             wb = openpyxl.Workbook()
@@ -58,7 +59,7 @@ class ExcelReportGenerator(BaseReportGenerator):  # Inheritance
             ws["B1"] = "Value"  # type: ignore
 
             # Data
-            metrics: List[Tuple[str, Union[int, str]]] = [
+            metrics: list[tuple[str, Union[int, str]]] = [
                 ("Pages", data.get("pages", 0)),
                 ("Content Items", data.get("content_items", 0)),
                 ("TOC Entries", data.get("toc_entries", 0)),

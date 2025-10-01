@@ -3,9 +3,10 @@
 import json
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
+
 import openpyxl
-from openpyxl.styles import Font, PatternFill
+from openpyxl.styles import Font
 
 
 class BaseValidator(ABC):  # Abstraction
@@ -13,13 +14,13 @@ class BaseValidator(ABC):  # Abstraction
         self._output_dir = output_dir  # Encapsulation
 
     @abstractmethod  # Abstraction
-    def generate_validation(self, toc_data: List[Any], spec_data: List[Any]) -> Path:
+    def generate_validation(self, toc_data: list[Any], spec_data: list[Any]) -> Path:
         pass
 
 
 class XLSValidator(BaseValidator):  # Inheritance
     def generate_validation(
-        self, toc_data: List[Any], spec_data: List[Any]
+        self, toc_data: list[Any], spec_data: list[Any]
     ) -> Path:  # Polymorphism
         xlsx_file = self._output_dir / "validation_report.xlsx"
         wb = openpyxl.Workbook()
@@ -40,14 +41,14 @@ class XLSValidator(BaseValidator):  # Inheritance
         return xlsx_file
 
     def _create_summary_sheet(
-        self, ws: Any, toc_data: List[Any], spec_data: List[Any]
+        self, ws: Any, toc_data: list[Any], spec_data: list[Any]
     ) -> None:  # Encapsulation
         # Headers
         ws["A1"] = "USB PD Specification Validation Report"  # type: ignore
         ws["A1"].font = Font(bold=True, size=14)  # type: ignore
 
         # Metrics
-        metrics = [
+        metrics: list[tuple[str, int | float | str]] = [
             ("TOC Entries", len(toc_data)),
             ("Content Items", len(spec_data)),
             ("Coverage %", round(len(spec_data) / 1046 * 100, 1)),
@@ -59,7 +60,7 @@ class XLSValidator(BaseValidator):  # Inheritance
             ws[f"B{i}"] = value  # type: ignore
 
     def _create_comparison_sheet(
-        self, ws: Any, toc_data: List[Any], spec_data: List[Any]
+        self, ws: Any, toc_data: list[Any], spec_data: list[Any]
     ) -> None:  # Encapsulation
         # Headers
         headers = ["Section", "TOC Title", "Content Found", "Status"]
@@ -90,13 +91,13 @@ def create_validation_report(output_dir: Path, toc_file: Path, spec_file: Path) 
     spec_data = []
 
     try:
-        with open(toc_file, "r", encoding="utf-8") as f:
+        with open(toc_file, encoding="utf-8") as f:
             toc_data = [json.loads(line) for line in f if line.strip()]
     except (FileNotFoundError, json.JSONDecodeError):
         pass
 
     try:
-        with open(spec_file, "r", encoding="utf-8") as f:
+        with open(spec_file, encoding="utf-8") as f:
             spec_data = [json.loads(line) for line in f if line.strip()]
     except (FileNotFoundError, json.JSONDecodeError):
         pass

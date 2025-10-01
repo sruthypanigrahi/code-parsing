@@ -4,7 +4,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 
 class BaseSearcher(ABC):  # Abstraction
@@ -25,7 +25,7 @@ class BaseSearcher(ABC):  # Abstraction
                 raise ValueError(f"Path traversal detected: {file_path}")
 
             # Additional security check for file extension
-            if not resolved_path.suffix in [".jsonl", ".json"]:
+            if resolved_path.suffix not in [".jsonl", ".json"]:
                 raise ValueError(f"Invalid file type: {file_path}")
 
             return resolved_path
@@ -33,18 +33,18 @@ class BaseSearcher(ABC):  # Abstraction
             raise ValueError(f"Invalid file path: {file_path} - {e}") from e
 
     @abstractmethod  # Abstraction
-    def search(self, term: str) -> List[Dict[str, Any]]:
+    def search(self, term: str) -> list[dict[str, Any]]:
         pass
 
 
 class JSONLSearcher(BaseSearcher):  # Inheritance
-    def search(self, term: str) -> List[Dict[str, Any]]:  # Polymorphism
-        matches: List[Dict[str, Any]] = []
+    def search(self, term: str) -> list[dict[str, Any]]:  # Polymorphism
+        matches: list[dict[str, Any]] = []
         try:
             with open(self._file_path, encoding="utf-8") as f:
                 for line in f:
                     try:
-                        item: Dict[str, Any] = json.loads(line)
+                        item: dict[str, Any] = json.loads(line)
                         content: str = item.get("content", "")
                         if term.lower() in content.lower():
                             matches.append(
@@ -69,7 +69,7 @@ class SearchDisplay:  # Encapsulation
     def __init__(self, max_results: int = 10):
         self._max_results = max_results  # Encapsulation
 
-    def show(self, matches: List[Dict[str, Any]], term: str) -> None:  # Abstraction
+    def show(self, matches: list[dict[str, Any]], term: str) -> None:  # Abstraction
         print(f"Found {len(matches)} matches for '{term}':")
         for match in matches[: self._max_results]:
             print(f"Page {match['page']} ({match['type']}): {match['content']}")

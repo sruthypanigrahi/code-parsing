@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Optional
+
 import yaml
 
 
@@ -51,7 +52,7 @@ class Config(BaseConfig):  # Inheritance
                 return yaml.safe_load(f) or {}
         except yaml.YAMLError as e:
             raise ValueError(f"Invalid YAML: {e}") from e
-        except (OSError, IOError) as e:
+        except OSError as e:
             raise ValueError(f"Cannot read config file: {e}") from e
 
     def _get_defaults(self) -> dict[str, Any]:  # Polymorphism

@@ -4,7 +4,8 @@
 import logging
 import sys
 from abc import ABC, abstractmethod
-from src.search_content import JSONLSearcher, SearchDisplay, SearchApp
+
+from src.search_content import JSONLSearcher, SearchApp, SearchDisplay
 
 
 class BaseRunner(ABC):  # Abstraction

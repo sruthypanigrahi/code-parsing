@@ -1,7 +1,7 @@
 """Minimal comprehensive tests with OOP principles."""
 
 from abc import ABC, abstractmethod
-from typing import List
+
 from src.config import Config
 from src.models import BaseContent, PageContent
 
@@ -42,13 +42,13 @@ class TestRunner:  # Encapsulation
     """Test runner (All 4 OOP principles)."""
 
     def __init__(self):
-        self._tests: List[BaseTestCase] = []  # Encapsulation
+        self._tests: list[BaseTestCase] = []  # Encapsulation
 
     def add_test(self, test: BaseTestCase) -> None:  # Polymorphism
         self._tests.append(test)
 
     def run_all(self) -> bool:  # Abstraction
-        results: List[bool] = [test.run_tests() for test in self._tests]
+        results: list[bool] = [test.run_tests() for test in self._tests]
         return all(results)
 
 

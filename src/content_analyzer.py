@@ -2,7 +2,8 @@
 
 import re
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Iterator
+from collections.abc import Iterator
+from typing import Any
 
 
 class BaseAnalyzer(ABC):  # Abstraction
@@ -41,7 +42,7 @@ class ContentAnalyzer:  # Composition
 
     def extract_items(
         self, text: str, page: int
-    ) -> Iterator[Dict[str, Any]]:  # Abstraction
+    ) -> Iterator[dict[str, Any]]:  # Abstraction
         for i, line in enumerate(text.split("\n")):
             line = line.strip()
             if len(line) > 10:

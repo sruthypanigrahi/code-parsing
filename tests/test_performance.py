@@ -2,7 +2,7 @@
 
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Callable, List
+from typing import Any, Callable
 
 
 class BasePerfTest(ABC):  # Abstraction
@@ -37,13 +37,13 @@ class ModelPerfTest(BasePerfTest):  # Inheritance
 
 class PerfTestSuite:  # Encapsulation
     def __init__(self):
-        self._tests: List[BasePerfTest] = []  # Encapsulation
+        self._tests: list[BasePerfTest] = []  # Encapsulation
 
     def add(self, test: BasePerfTest) -> None:  # Polymorphism
         self._tests.append(test)
 
     def run_all(self) -> bool:  # Abstraction
-        results: List[bool] = [t.measure() for t in self._tests]
+        results: list[bool] = [t.measure() for t in self._tests]
         return all(results)
 
 

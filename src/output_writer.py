@@ -3,7 +3,7 @@
 import json
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List, TextIO, Union
+from typing import Any, TextIO, Union
 
 
 class BaseWriter(ABC):  # Abstraction: abstract base class
@@ -32,7 +32,7 @@ class BaseWriter(ABC):  # Abstraction: abstract base class
 class JSONLWriter(BaseWriter):  # Inheritance: extends BaseWriter
     """JSONL file writer (Inheritance, Polymorphism)."""
 
-    def write(self, data: Union[List[Any], Any]) -> None:  # Polymorphism
+    def write(self, data: Union[list[Any], Any]) -> None:  # Polymorphism
         """Write data to JSONL file."""
         try:
             with open(self._output_path, "w", encoding="utf-8") as f:
@@ -43,7 +43,7 @@ class JSONLWriter(BaseWriter):  # Inheritance: extends BaseWriter
         except OSError as e:
             raise RuntimeError(f"Cannot write to {self._output_path}: {e}") from e
 
-    def _write_list(self, f: TextIO, data: List[Any]) -> None:  # Encapsulation: private
+    def _write_list(self, f: TextIO, data: list[Any]) -> None:  # Encapsulation: private
         """Write list of items."""
         for item in data:
             self._write_single(f, item)

@@ -1,6 +1,7 @@
 """Data models with OOP principles."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
+
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 
@@ -28,7 +29,7 @@ class TOCEntry(BaseModel):  # Encapsulation
     page: int = Field(gt=0)  # Encapsulation
     level: int = Field(gt=0)  # Encapsulation
     parent_id: Optional[str] = Field(default=None)  # Encapsulation
-    tags: List[str] = Field(default_factory=list)  # Encapsulation
+    tags: list[str] = Field(default_factory=list)  # Encapsulation
 
     @field_validator("section_id")  # Encapsulation
     @classmethod
@@ -70,5 +71,5 @@ class ContentItem(BaseContent):  # Inheritance
     content_id: str = Field()  # Encapsulation
     type: str = Field()  # Encapsulation
     block_id: str = Field()  # Encapsulation
-    bbox: List[float] = Field(default_factory=lambda: [])  # Encapsulation
-    metadata: Dict[str, Any] = Field(default_factory=dict)  # Encapsulation
+    bbox: list[float] = Field(default_factory=lambda: [])  # Encapsulation
+    metadata: dict[str, Any] = Field(default_factory=dict)  # Encapsulation

@@ -1,7 +1,6 @@
 """Minimal tests with all 4 OOP principles."""
 
 from abc import ABC, abstractmethod
-from typing import List
 
 
 class BaseTest(ABC):  # Abstraction
@@ -30,13 +29,13 @@ class ModelTest(BaseTest):  # Inheritance
 
 class TestSuite:  # Encapsulation
     def __init__(self):
-        self._tests: List[BaseTest] = []  # Encapsulation
+        self._tests: list[BaseTest] = []  # Encapsulation
 
     def add(self, test: BaseTest) -> None:  # Polymorphism
         self._tests.append(test)
 
     def run(self) -> bool:  # Abstraction
-        results: List[bool] = [t.execute() for t in self._tests]
+        results: list[bool] = [t.execute() for t in self._tests]
         return all(results)
 
 

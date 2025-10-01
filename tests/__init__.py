@@ -1,14 +1,14 @@
 """Test package with OOP principles."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any
 
 
 class BaseTestCase(ABC):  # Abstraction
     """Abstract base test case (Abstraction, Encapsulation)."""
 
     def __init__(self):
-        self._test_data: Dict[str, Any] = {}  # Encapsulation: protected test data
+        self._test_data: dict[str, Any] = {}  # Encapsulation: protected test data
 
     @abstractmethod  # Abstraction: must be implemented
     def setup_test_data(self) -> None:
@@ -20,7 +20,7 @@ class BaseTestCase(ABC):  # Abstraction
         self._test_data[key] = value
 
     @property  # Encapsulation: controlled access
-    def test_data(self) -> Dict[str, Any]:
+    def test_data(self) -> dict[str, Any]:
         """Get test data."""
         return self._test_data.copy()
 
@@ -38,7 +38,7 @@ class TestHelper:  # Encapsulation
     """Test helper utilities (Encapsulation, Abstraction)."""
 
     @staticmethod  # Abstraction: utility method
-    def create_mock_data(count: int = 5) -> List[str]:
+    def create_mock_data(count: int = 5) -> list[str]:
         """Create mock data."""
         return [f"mock_item_{i}" for i in range(count)]
 

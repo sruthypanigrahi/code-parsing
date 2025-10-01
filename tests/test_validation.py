@@ -1,8 +1,9 @@
 """Validation tests with OOP principles."""
 
 import unittest
-from pathlib import Path
 from abc import ABC, abstractmethod
+from pathlib import Path
+
 from src.validation_generator import XLSValidator
 
 

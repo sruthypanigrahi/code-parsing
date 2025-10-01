@@ -2,8 +2,10 @@
 
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Optional
+
 from .content_analyzer import ContentAnalyzer
 
 
@@ -33,10 +35,10 @@ class PDFExtractor(BaseExtractor):  # Inheritance
         super().__init__(pdf_path)
         self._analyzer = ContentAnalyzer()  # Composition
 
-    def extract(self) -> List[Dict[str, Any]]:  # Polymorphism
+    def extract(self) -> list[dict[str, Any]]:  # Polymorphism
         return list(self.extract_structured_content())
 
-    def extract_content(self, max_pages: Optional[int] = None) -> List[Dict[str, Any]]:
+    def extract_content(self, max_pages: Optional[int] = None) -> list[dict[str, Any]]:
         return list(self.extract_structured_content(max_pages))
 
     def _validate_path(self, path: Path) -> Path:  # Encapsulation
@@ -46,7 +48,7 @@ class PDFExtractor(BaseExtractor):  # Inheritance
 
     def extract_structured_content(
         self, max_pages: Optional[int] = None
-    ) -> Iterator[Dict[str, Any]]:
+    ) -> Iterator[dict[str, Any]]:
         fitz = self._get_fitz()
         doc = fitz.open(str(self._pdf_path))  # type: ignore
         try:
@@ -61,7 +63,7 @@ class PDFExtractor(BaseExtractor):  # Inheritance
 
     def _extract_page_content(
         self, page: Any, page_num: int
-    ) -> Iterator[Dict[str, Any]]:
+    ) -> Iterator[dict[str, Any]]:
         """Fast page content extraction (Encapsulation)."""
         try:
             blocks = page.get_text("dict")["blocks"]  # type: ignore
@@ -94,14 +96,14 @@ class PDFExtractor(BaseExtractor):  # Inheritance
         except Exception as e:
             self._logger.warning(f"Error extracting page {page_num}: {e}")
 
-    def _get_block_text(self, block: Dict[str, Any]) -> str:  # Encapsulation
+    def _get_block_text(self, block: dict[str, Any]) -> str:  # Encapsulation
         return "".join(
             str(span["text"]) for line in block["lines"] for span in line["spans"]
         )
 
     def _extract_tables(
         self, plumber_doc: Any, page_num: int
-    ) -> Iterator[Dict[str, Any]]:
+    ) -> Iterator[dict[str, Any]]:
         """Extract tables using cached pdfplumber doc (Encapsulation)."""
         try:
             if page_num < len(plumber_doc.pages):

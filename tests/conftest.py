@@ -1,8 +1,9 @@
 """Minimal test configuration with OOP principles."""
 
-import pytest
 from abc import ABC, abstractmethod
 from pathlib import Path
+
+import pytest
 
 
 class BaseFixture(ABC):  # Abstraction

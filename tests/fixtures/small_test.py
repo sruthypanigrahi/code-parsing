@@ -1,7 +1,7 @@
 """Small test fixtures with OOP principles."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any
 
 
 class BaseFixture(ABC):  # Abstraction
@@ -9,10 +9,10 @@ class BaseFixture(ABC):  # Abstraction
 
     def __init__(self, name: str):
         self._name = name  # Encapsulation
-        self._data: Dict[str, Any] = {}  # Encapsulation
+        self._data: dict[str, Any] = {}  # Encapsulation
 
     @abstractmethod  # Abstraction
-    def generate_data(self) -> Dict[str, Any]:
+    def generate_data(self) -> dict[str, Any]:
         pass
 
     @property  # Encapsulation
@@ -23,7 +23,7 @@ class BaseFixture(ABC):  # Abstraction
 class MockTOCFixture(BaseFixture):  # Inheritance
     """Mock TOC fixture (Inheritance, Polymorphism)."""
 
-    def generate_data(self) -> Dict[str, Any]:  # Polymorphism
+    def generate_data(self) -> dict[str, Any]:  # Polymorphism
         return {
             "toc_entries": [
                 {"section_id": "1", "title": "Introduction", "page": 1},
@@ -37,7 +37,7 @@ class MockTOCFixture(BaseFixture):  # Inheritance
 class MockContentFixture(BaseFixture):  # Inheritance
     """Mock content fixture (Inheritance, Polymorphism)."""
 
-    def generate_data(self) -> Dict[str, Any]:  # Polymorphism
+    def generate_data(self) -> dict[str, Any]:  # Polymorphism
         return {
             "content_items": [
                 {"type": "paragraph", "content": "Test paragraph 1", "page": 1},
@@ -62,19 +62,19 @@ class FixtureFactory:  # Abstraction
 
 
 # Test data generators
-def get_small_toc_data() -> List[Dict[str, Any]]:
+def get_small_toc_data() -> list[dict[str, Any]]:
     """Generate small TOC test data."""
     fixture = FixtureFactory.create_fixture("toc")
     return fixture.generate_data()["toc_entries"]
 
 
-def get_small_content_data() -> List[Dict[str, Any]]:
+def get_small_content_data() -> list[dict[str, Any]]:
     """Generate small content test data."""
     fixture = FixtureFactory.create_fixture("content")
     return fixture.generate_data()["content_items"]
 
 
-def get_test_config() -> Dict[str, Any]:
+def get_test_config() -> dict[str, Any]:
     """Generate test configuration."""
     return {
         "pdf_input_file": "test.pdf",
