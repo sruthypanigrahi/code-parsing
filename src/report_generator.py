@@ -6,7 +6,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Union
 
-import openpyxl
+try:
+    import openpyxl
+    HAS_OPENPYXL = True
+except ImportError:
+    HAS_OPENPYXL = False
+    openpyxl = None
 
 
 class BaseReportGenerator(ABC):  # Abstraction
@@ -45,6 +50,9 @@ class JSONReportGenerator(BaseReportGenerator):  # Inheritance
 
 class ExcelReportGenerator(BaseReportGenerator):  # Inheritance
     def generate(self, data: dict[str, Any]) -> Path:  # Polymorphism
+        if not HAS_OPENPYXL:
+            raise ImportError("openpyxl is required for Excel report generation")
+        
         excel_file = self._output_dir / "validation_report.xlsx"
         try:
             wb = openpyxl.Workbook()

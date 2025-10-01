@@ -35,7 +35,7 @@ class ModelTest(BaseTest):  # Inheritance
         return content.page == 1
 
 
-class TestRunner:  # Encapsulation
+class OOPTestRunner:  # Encapsulation
     """Test runner (All 4 OOP principles)."""
 
     def __init__(self):
@@ -51,7 +51,7 @@ class TestRunner:  # Encapsulation
 
 def test_oop_principles():
     """Test all 4 OOP principles in minimal code."""
-    runner = TestRunner()
+    runner = OOPTestRunner()
     runner.add(ConfigTest("config"))  # Factory pattern
     runner.add(ModelTest("model"))
 

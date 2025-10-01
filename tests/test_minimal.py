@@ -27,7 +27,7 @@ class ModelTest(BaseTest):  # Inheritance
         return BaseContent(page=1, content="test").page == 1
 
 
-class TestSuite:  # Encapsulation
+class MinimalTestSuite:  # Encapsulation
     def __init__(self):
         self._tests: list[BaseTest] = []  # Encapsulation
 
@@ -40,7 +40,7 @@ class TestSuite:  # Encapsulation
 
 
 def test_all():
-    suite = TestSuite()
+    suite = MinimalTestSuite()
     suite.add(ConfigTest("config"))
     suite.add(ModelTest("model"))
     assert suite.run()

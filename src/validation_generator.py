@@ -5,8 +5,14 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
 
-import openpyxl
-from openpyxl.styles import Font
+try:
+    import openpyxl
+    from openpyxl.styles import Font
+    HAS_OPENPYXL = True
+except ImportError:
+    HAS_OPENPYXL = False
+    openpyxl = None
+    Font = None
 
 
 class BaseValidator(ABC):  # Abstraction
@@ -22,6 +28,9 @@ class XLSValidator(BaseValidator):  # Inheritance
     def generate_validation(
         self, toc_data: list[Any], spec_data: list[Any]
     ) -> Path:  # Polymorphism
+        if not HAS_OPENPYXL:
+            raise ImportError("openpyxl is required for Excel report generation")
+        
         xlsx_file = self._output_dir / "validation_report.xlsx"
         wb = openpyxl.Workbook()
 
