@@ -41,12 +41,9 @@ venv.bak/
 Thumbs.db
 
 # Generated outputs (should be recreated by running the tool)
-outputs/
 test_output/
-*.jsonl
 parsed_data.json
 paragraphs.json
-*.log
 
 # Testing
 .coverage

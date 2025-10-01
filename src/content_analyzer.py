@@ -29,7 +29,7 @@ class PatternAnalyzer(BaseAnalyzer):  # Inheritance
         text = text.strip()
         for content_type, pattern in self._compiled.items():
             if pattern.search(text):
-                return content_type
+                return str(content_type)
         return "paragraph"
 
 
@@ -38,7 +38,7 @@ class ContentAnalyzer:  # Composition
         self._analyzer = PatternAnalyzer()  # Encapsulation
 
     def classify(self, text: str) -> str:  # Abstraction
-        return self._analyzer.analyze(text)  # Polymorphism
+        return str(self._analyzer.analyze(text))  # Polymorphism
 
     def extract_items(
         self, text: str, page: int
