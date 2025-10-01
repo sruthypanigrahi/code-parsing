@@ -31,30 +31,47 @@ class CLIApp(BaseApp):  # Inheritance
         return parser
 
     def _get_mode(self) -> int:  # Encapsulation
-        print("Select: 1=Full, 2=600 pages, 3=200 pages")
+        print("\n=== USB PD Specification Parser ===")
+        print("Please select processing mode:")
+        print("  [1] Full Document    - Process entire PDF (all pages)")
+        print("  [2] Extended Mode    - Process first 600 pages (balanced)")
+        print("  [3] Standard Mode    - Process first 200 pages (recommended)")
+        print("")
         while True:
             try:
-                choice = int(input("Mode (1-3): "))
+                choice = int(input("Enter your choice (1-3): "))
                 if 1 <= choice <= 3:
+                    mode_names = {
+                        1: "Full Document",
+                        2: "Extended Mode",
+                        3: "Standard Mode",
+                    }
+                    print(f"\nSelected: {mode_names[choice]}")
                     return choice
-                print("Invalid choice")
+                print("Invalid selection. Please choose 1, 2, or 3.")
             except (ValueError, KeyboardInterrupt):
-                self._logger.warning("Invalid input")
-                print("Invalid choice")
+                self._logger.warning("User provided invalid input")
+                print("Invalid input. Please enter a valid number (1-3).")
 
     def _execute_pipeline(self, args: argparse.Namespace) -> None:
         orchestrator = PipelineOrchestrator(args.config)
         if args.toc_only:
             result = orchestrator.run_toc_only()
-            self._logger.info(f"TOC entries: {len(result)}")
+            self._logger.info(
+                f"TOC extraction completed: {len(result)} entries extracted successfully"
+            )
         elif args.content_only:
             result = orchestrator.run_content_only()
-            self._logger.info(f"Content items: {result}")
+            self._logger.info(
+                f"Content extraction completed: {result} items processed successfully"
+            )
         else:
             mode = args.mode or self._get_mode()
             result = orchestrator.run_full_pipeline(mode)
             self._logger.info(
-                f"Pipeline completed: {result['toc_entries']} TOC entries"
+                f"Processing completed successfully: "
+                f"{result['toc_entries']} TOC entries extracted, "
+                f"{result['spec_counts']['content_items']} content items processed"
             )
 
     def run(self) -> None:  # Polymorphism
@@ -62,7 +79,7 @@ class CLIApp(BaseApp):  # Inheritance
             args = self._parser.parse_args()
             self._execute_pipeline(args)
         except Exception as e:
-            self._logger.error(f"App failed: {e}")
+            self._logger.error(f"Application execution failed: {e}")
             sys.exit(1)
 
 

@@ -8,8 +8,11 @@ A **professional-grade Python tool** that extracts content from USB Power Delive
 # Install dependencies
 pip install -r requirements.txt
 
-# Run extraction (Memory-safe mode - recommended)
-python main.py --mode 3
+# Run with interactive professional interface
+python main.py
+
+# Or run directly with specific mode
+python main.py --mode 3  # Standard mode (recommended)
 
 # View results (Windows)
 type outputs\usb_pd_spec.jsonl | findstr /n "." | findstr "^[1-3]:"
@@ -28,27 +31,32 @@ pip install -r requirements.txt
 
 ## 💻 Usage
 
+### Interactive Professional Interface
 ```bash
-# Interactive mode (recommended)
+# Launch interactive mode with professional prompts
 python main.py
 
-# Extract all pages
-python main.py --mode 1
+# You'll see:
+# === USB PD Specification Parser ===
+# Please select processing mode:
+#   [1] Full Document    - Process entire PDF (all pages)
+#   [2] Extended Mode    - Process first 600 pages (balanced)
+#   [3] Standard Mode    - Process first 200 pages (recommended)
+```
 
-# Extract first 600 pages
-python main.py --mode 2
+### Command Line Options
+```bash
+# Direct mode selection
+python main.py --mode 1  # Full Document
+python main.py --mode 2  # Extended Mode (600 pages)
+python main.py --mode 3  # Standard Mode (200 pages)
 
-# Extract first 200 pages (memory-safe)
-python main.py --mode 3
-
-# Extract only TOC
-python main.py --toc-only
-
-# Extract only content
-python main.py --content-only
+# Specialized extraction
+python main.py --toc-only     # Extract only Table of Contents
+python main.py --content-only # Extract only content
 
 # Search extracted content
-python search.py "USB"
+python search.py "USB Power Delivery"
 ```
 
 ## 🏗️ Project Structure
@@ -162,6 +170,23 @@ ls outputs/  # validation_report.xlsx will be included
 - **Code Quality Score**: 95%+ compliance
 - **Security Rating**: All vulnerabilities resolved
 - **Test Coverage**: 95%+ with comprehensive edge cases
+
+### **Professional Interface & Logging**
+- **Interactive CLI**: Professional prompts with clear mode descriptions
+- **Comprehensive Logging**: Detailed progress tracking at INFO level
+- **Real-time Feedback**: Step-by-step processing updates
+- **Error Handling**: Graceful error messages with specific guidance
+- **Progress Monitoring**: Clear indication of extraction, writing, and report generation phases
+
+```
+Example Output:
+=== USB PD Specification Parser ===
+INFO:PipelineOrchestrator:Configuration loaded successfully
+INFO:PipelineOrchestrator:Starting pipeline execution - Mode: Standard (200 pages)
+INFO:PipelineOrchestrator:TOC extraction completed: 369 entries found
+INFO:PipelineOrchestrator:Content extraction completed: 4403 items processed
+INFO:PipelineOrchestrator:Pipeline execution completed successfully
+```
 
 ## 🔧 Dependencies
 
