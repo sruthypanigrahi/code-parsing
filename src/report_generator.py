@@ -8,10 +8,11 @@ from typing import Any, Union
 
 try:
     import openpyxl
-    HAS_OPENPYXL = True
+
+    _has_openpyxl = True
 except ImportError:
-    HAS_OPENPYXL = False
-    openpyxl = None
+    _has_openpyxl = False
+    openpyxl = None  # type: ignore
 
 
 class BaseReportGenerator(ABC):  # Abstraction
@@ -50,9 +51,9 @@ class JSONReportGenerator(BaseReportGenerator):  # Inheritance
 
 class ExcelReportGenerator(BaseReportGenerator):  # Inheritance
     def generate(self, data: dict[str, Any]) -> Path:  # Polymorphism
-        if not HAS_OPENPYXL:
+        if not _has_openpyxl or openpyxl is None:
             raise ImportError("openpyxl is required for Excel report generation")
-        
+
         excel_file = self._output_dir / "validation_report.xlsx"
         try:
             wb = openpyxl.Workbook()
