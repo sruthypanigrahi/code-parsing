@@ -1,3 +1,4 @@
+# USB PD Specification Parser - Validation Tests
 """Validation tests with OOP principles."""
 
 import unittest

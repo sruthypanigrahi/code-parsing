@@ -1,3 +1,4 @@
+# USB PD Specification Parser - Content Analyzer Module
 """Minimal content analyzer with OOP principles."""
 
 import re

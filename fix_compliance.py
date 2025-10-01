@@ -1,3 +1,4 @@
+# USB PD Specification Parser - Compliance Fixer
 """Fix compliance issues quickly."""
 
 import json

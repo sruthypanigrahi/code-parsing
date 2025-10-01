@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# USB PD Specification Parser - Performance Benchmarking
 """Minimal benchmark with OOP principles."""
 
 import logging

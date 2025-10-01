@@ -1,3 +1,4 @@
+# USB PD Specification Parser - Data Models Module
 """Data models with OOP principles."""
 
 from typing import Any, Optional

@@ -1,3 +1,4 @@
+# USB PD Specification Parser - Comprehensive Tests
 """Minimal comprehensive tests with OOP principles."""
 
 from abc import ABC, abstractmethod

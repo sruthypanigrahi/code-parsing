@@ -1,3 +1,4 @@
+<!-- USB PD Specification Parser - Change Log -->
 # Changelog
 
 All notable changes to the USB PD Specification Parser project.

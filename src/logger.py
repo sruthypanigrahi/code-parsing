@@ -1,3 +1,4 @@
+# USB PD Specification Parser - Logger Module
 """Logger with OOP principles."""
 
 import logging

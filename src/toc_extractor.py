@@ -1,3 +1,4 @@
+# USB PD Specification Parser - TOC Extractor Module
 """TOC extractor with OOP principles."""
 
 import re

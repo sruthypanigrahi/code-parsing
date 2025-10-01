@@ -1,3 +1,4 @@
+# USB PD Specification Parser - Dependencies
 PyMuPDF==1.24.9
 pdfplumber==0.10.3
 Pydantic==2.5.2

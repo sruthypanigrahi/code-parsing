@@ -1,3 +1,4 @@
+# USB PD Specification Parser - Parser Tests
 """Minimal parser tests with OOP principles."""
 
 from abc import ABC, abstractmethod

@@ -1,3 +1,4 @@
+# USB PD Specification Parser - Search Content Module
 """Minimal search content with OOP principles."""
 
 import json

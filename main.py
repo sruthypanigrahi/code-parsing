@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# USB PD Specification Parser - Main Entry Point
 """USB PD Specification Parser - Main Entry Point with OOP principles"""
 
 from abc import ABC, abstractmethod

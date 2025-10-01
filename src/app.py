@@ -1,3 +1,4 @@
+# USB PD Specification Parser - CLI Application Module
 """Minimal CLI app with OOP principles."""
 
 import argparse

@@ -1,3 +1,4 @@
+# USB PD Specification Parser - Configuration Module
 """Configuration loader with OOP principles."""
 
 from abc import ABC, abstractmethod

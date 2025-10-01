@@ -1,3 +1,4 @@
+# USB PD Specification Parser - Small Test Fixtures
 """Small test fixtures with OOP principles."""
 
 from abc import ABC, abstractmethod

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# USB PD Specification Parser - Performance Profiler
 """Performance profiler with OOP principles."""
 
 import cProfile
