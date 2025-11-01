@@ -1,4 +1,4 @@
-"""USB PD Specification Parser - Main Entry Point with OOP."""
+"""USB PD Specification Parser - Main Entry Point."""
 
 from abc import ABC, abstractmethod
 from typing import Any, Optional
