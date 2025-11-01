@@ -1,7 +1,13 @@
 name: PR Agent Review
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, reopened, synchronize]
 
 jobs:
   pr_agent:
