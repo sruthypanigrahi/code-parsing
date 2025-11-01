@@ -1,4 +1,4 @@
-"""Configuration loader with OOP principles."""
+"""Configuration loader."""
 
 from pathlib import Path
 from typing import Any, Optional
