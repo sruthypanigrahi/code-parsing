@@ -1,0 +1,10 @@
+[review]
+enable_scoring = true
+scoring_criteria = [
+  "functionality",
+  "documentation",
+  "oop_principles",
+  "modularity",
+  "code_quality",
+  "performance"
+]
