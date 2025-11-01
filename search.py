@@ -1,4 +1,4 @@
-"""Search entry point with OOP principles."""
+"""Search entry point ."""
 
 import logging
 import sys
