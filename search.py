@@ -1,4 +1,4 @@
-"""Search entry point with OOP principles."""
+"""Search entry point ."""
 
 from __future__ import annotations
 
