@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Sequence
-from typing import Any, Optional, Protocol
+from collections.abc import Callable, Sequence
+from typing import Any, Protocol
 
 
 class SearchResultPresenter(Protocol):
@@ -19,8 +19,14 @@ class SearchResultPresenter(Protocol):
 class ConsoleSearchPresenter:
     """Default presenter that writes results to stdout."""
 
-    def __init__(self, logger: logging.Logger | None = None) -> None:
+    def __init__(
+        self,
+        logger: logging.Logger | None = None,
+        *,
+        output: Callable[[str], None] | None = None,
+    ) -> None:
         self._logger = logger or logging.getLogger(self.__class__.__name__)
+        self._output = output or print
 
     def present(
         self, matches: Sequence[dict[str, Any]], term: str, max_results: int
@@ -30,12 +36,12 @@ class ConsoleSearchPresenter:
         self._logger.info(
             "Displaying %s of %s matches for '%s'", display_count, total_count, term
         )
-        print(f"Found {total_count} matches for '{term}':")
+        self._output(f"Found {total_count} matches for '{term}':")
         for match in matches[:max_results]:
-            print(self._format_match(match))
+            self._output(self._format_match(match))
         if total_count > max_results:
             remaining = total_count - max_results
-            print(f"... and {remaining} more matches")
+            self._output(f"... and {remaining} more matches")
             self._logger.info(
                 "Truncated display: showing %s of %s total matches",
                 max_results,

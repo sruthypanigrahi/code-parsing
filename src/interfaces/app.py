@@ -12,18 +12,27 @@ from src.core.orchestrator.interfaces import PipelineInterface
 from src.core.orchestrator.pipeline_orchestrator import PipelineOrchestrator
 
 PipelineFactory = Callable[[str], PipelineInterface]
+OutputSink = Callable[[str], None]
 
 
-class BaseApp(ABC):  # Abstraction
-    def __init__(self, orchestrator_factory: PipelineFactory) -> None:
-        """Initialize base application."""
+class BaseApp(ABC):
+    """Base class for CLI applications that orchestrate the pipeline."""
+
+    def __init__(
+        self,
+        orchestrator_factory: PipelineFactory,
+        *,
+        output: OutputSink | None = None,
+    ) -> None:
+        """Store collaborators and initialise logging."""
         self._orchestrator_factory = orchestrator_factory
         self._logger = logging.getLogger(self.__class__.__name__)
         logging.basicConfig(level=logging.INFO)
+        self._output = output or print
 
     @property
     def logger(self) -> logging.Logger:
-        """Get logger instance."""
+        """Return the logger instance for subclasses."""
         return self._logger
 
     @property
@@ -31,36 +40,43 @@ class BaseApp(ABC):  # Abstraction
         """Factory that builds orchestrators for the app."""
         return self._orchestrator_factory
 
-    @abstractmethod  # Abstraction
+    @property
+    def output(self) -> OutputSink:
+        """Output sink used for user-facing messages."""
+        return self._output
+
+    @abstractmethod
     def run(self) -> None:
         """Execute the application."""
 
 
-class CLIApp(BaseApp):  # Inheritance
+class CLIApp(BaseApp):
+    """Concrete CLI app that runs the pipeline based on command-line options."""
+
     def __init__(
         self,
         orchestrator_factory: PipelineFactory | None = None,
+        *,
         parser_factory: Callable[[], argparse.ArgumentParser] | None = None,
+        output: OutputSink | None = None,
     ) -> None:
-        """Initialize CLI application."""
         factory = orchestrator_factory or PipelineOrchestrator
-        super().__init__(factory)
-        self.__parser = parser_factory() if parser_factory else self.__create_parser()
+        super().__init__(factory, output=output)
+        parser = parser_factory() if parser_factory else self._create_parser()
+        self.__parser = parser
 
-    def __create_parser(
-        self,
-    ) -> argparse.ArgumentParser:
-        """Create argument parser."""
+    def _create_parser(self) -> argparse.ArgumentParser:
+        """Create the argument parser for CLI usage."""
         parser = argparse.ArgumentParser(description="USB PD Parser")
         parser.add_argument("--config", default="application.yml")
         parser.add_argument("--toc-only", action="store_true")
         parser.add_argument("--content-only", action="store_true")
         return parser
 
-    def __execute_pipeline(self, args: argparse.Namespace) -> None:
-        """Execute pipeline based on arguments."""
-        print("\n=== USB PD Specification Parser ===")
-        print("Processing entire PDF document...\n")
+    def _execute_pipeline(self, args: argparse.Namespace) -> None:
+        """Execute pipeline based on parsed arguments."""
+        self.output("\n=== USB PD Specification Parser ===")
+        self.output("Processing entire PDF document...\n")
 
         orchestrator = self.orchestrator_factory(args.config)
         if args.toc_only:
@@ -79,17 +95,17 @@ class CLIApp(BaseApp):  # Inheritance
             msg = "Processing completed: %s TOC entries, %s content items"
             self.logger.info(msg, toc_count, content_count)
 
-    def run(self) -> None:  # Polymorphism
-        """Run CLI application."""
+    def run(self) -> None:
+        """Run the CLI application."""
         try:
             args = self.__parser.parse_args()
-            self.__execute_pipeline(args)
-        except Exception as e:
+            self._execute_pipeline(args)
+        except Exception as exc:  # pragma: no cover - defensive exit path
             msg = "Application execution failed: %s"
-            self.logger.error(msg, e)
+            self.logger.error(msg, exc)
             sys.exit(1)
 
 
 def main() -> None:
     """Main entry point."""
-    CLIApp().run()  # Factory pattern + Polymorphism
+    CLIApp().run()

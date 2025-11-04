@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
-from abc import ABC, abstractmethod
+from abc import ABC
 from pathlib import Path
 from typing import Any
 
@@ -53,7 +53,6 @@ class BaseValidator(OutputDirMixin, ABC):
             "status": status,
         }
 
-    @abstractmethod
     def _write_report(
         self,
         toc_data: list[Any],
@@ -61,6 +60,8 @@ class BaseValidator(OutputDirMixin, ABC):
         results: dict[str, Any],
     ) -> Path:
         """Persist validation results to disk."""
+        msg = f"{self.__class__.__name__} must implement _write_report()."
+        raise NotImplementedError(msg)
 
     def _store_results(self, results: dict[str, Any]) -> None:
         """Cache the results for later inspection."""

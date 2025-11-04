@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import time
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from typing import Any
 
 
@@ -75,17 +75,24 @@ class BenchmarkSuite:
 class BenchmarkCLI:
     """CLI adapter responsible for presenting benchmark results."""
 
-    def __init__(self, suite: BenchmarkSuite):
+    def __init__(
+        self,
+        suite: BenchmarkSuite,
+        *,
+        output: Callable[[str], None] | None = None,
+    ):
+        """Create a CLI wrapper with an injectable output sink."""
         self._suite = suite
+        self._output = output or print
 
     def run(self) -> None:
-        """Execute the suite and print formatted results."""
+        """Execute the suite and emit formatted results through the sink."""
         for result in self._suite.run():
             name = result["name"]
             time_val = result["time"]
             ops = result["ops"]
             msg = f"{name}: {time_val:.3f}s ({ops} ops)"
-            print(msg)
+            self._output(msg)
 
 
 def build_default_suite() -> BenchmarkSuite:
