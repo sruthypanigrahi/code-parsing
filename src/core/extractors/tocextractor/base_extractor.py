@@ -70,22 +70,20 @@ class BaseTOCExtractor(ABC):  # Abstraction
         """Create TOC entry if valid (Encapsulation)."""
         try:
             page = int(page_str)
-            if not self._is_valid_entry(page, title):
-                return None
-
-            level = self._calculate_level(section_id)
-            return TOCEntry(
-                doc_title=self._doc_title,
-                section_id=section_id,
-                title=title.strip(),
-                full_path=title.strip(),
-                page=page,
-                level=level,
-                parent_id=None,
-                tags=[],
-            )
         except ValueError:
             return None
+
+        if not self._is_valid_entry(page, title):
+            return None
+
+        level = self._calculate_level(section_id)
+        return self._build_entry(
+            section_id=section_id,
+            title=title.strip(),
+            page=page,
+            level=level,
+            parent_id=None,
+        )
 
     def _is_valid_entry(self, page: int, title: str) -> bool:
         """Check if entry is valid (Encapsulation)."""
@@ -96,3 +94,27 @@ class BaseTOCExtractor(ABC):  # Abstraction
     def _calculate_level(self, section_id: str) -> int:
         """Calculate hierarchy level (Encapsulation)."""
         return section_id.count(".") + 1 if "." in section_id else 1
+
+    def _build_entry(
+        self,
+        *,
+        section_id: str,
+        title: str,
+        page: int,
+        level: int,
+        parent_id: Optional[str],
+        full_path: Optional[str] = None,
+    ) -> TOCEntry:
+        """Construct a TOCEntry instance with shared defaults."""
+        resolved_title = title.strip()
+        resolved_full_path = full_path.strip() if full_path else resolved_title
+        return TOCEntry(
+            doc_title=self._doc_title,
+            section_id=section_id,
+            title=resolved_title,
+            full_path=resolved_full_path,
+            page=page,
+            level=level,
+            parent_id=parent_id,
+            tags=[],
+        )

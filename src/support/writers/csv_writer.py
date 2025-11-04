@@ -10,6 +10,8 @@ from src.support.writers.base_writer import BaseWriter
 class CSVWriter(BaseWriter):  # Inheritance and Polymorphism
     """CSV file writer with proper encapsulation."""
 
+    format_name = "csv"
+
     def __init__(self, output_path: Path):
         """Initialize CSV writer."""
         super().__init__(output_path)
@@ -32,10 +34,6 @@ class CSVWriter(BaseWriter):  # Inheritance and Polymorphism
         if len(value) != 1:
             raise ValueError("Delimiter must be a single character")
         self.__delimiter = value
-
-    def get_format(self) -> str:  # Polymorphism
-        """Get output format name."""
-        return "csv"
 
     def validate_data(self, data: Any) -> bool:  # Polymorphism
         """Validate data for CSV format."""

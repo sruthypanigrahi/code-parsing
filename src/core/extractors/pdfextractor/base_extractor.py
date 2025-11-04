@@ -17,18 +17,26 @@ class BaseExtractor(ABC):  # Abstraction
             raise FileNotFoundError(f"PDF not found: {pdf_path}")
 
     @property
-    def _pdf_path(self) -> Path:  # Protected property for subclasses
-        """Get PDF path for subclasses."""
+    def pdf_path(self) -> Path:
+        """Public read-only PDF path."""
         return self.__pdf_path
 
     @property
-    def _logger(self) -> Any:  # Protected property for subclasses
-        """Get logger for subclasses."""
+    def pdf_name(self) -> str:
+        """Public read-only PDF name."""
+        return self.__pdf_path.name
+
+    @property
+    def logger(self) -> Any:
+        """Public read-only logger access."""
         return self.__logger
 
     @abstractmethod  # Abstraction
     def extract(self) -> Any:
         """Extract content from PDF."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__}.extract() must be implemented by subclasses."
+        )
 
     def _get_fitz(self) -> Any:  # Encapsulation
         """Get fitz module."""
@@ -37,17 +45,3 @@ class BaseExtractor(ABC):  # Abstraction
         return fitz
 
 
-class FastExtractor(BaseExtractor):  # Inheritance + Polymorphism
-    """Fast extraction variant."""
-
-    def extract(self) -> Any:  # Method override
-        """Fast extraction implementation."""
-        return []
-
-
-class DetailedExtractor(BaseExtractor):  # Inheritance + Polymorphism
-    """Detailed extraction variant."""
-
-    def extract(self) -> Any:  # Method override
-        """Detailed extraction implementation."""
-        return []

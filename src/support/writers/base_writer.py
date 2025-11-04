@@ -2,7 +2,9 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, ClassVar, Protocol
+
+from src.utils.mixins import OutputPathMixin
 
 
 class WriterProtocol(Protocol):  # Protocol for polymorphism
@@ -17,26 +19,26 @@ class WriterProtocol(Protocol):  # Protocol for polymorphism
         ...
 
 
-class BaseWriter(ABC):  # Abstraction
+class BaseWriter(OutputPathMixin, ABC):  # Abstraction
     """Abstract writer with encapsulation and polymorphism."""
+
+    format_name: ClassVar[str] = "base"
 
     def __init__(self, output_path: Path):
         """Initialize writer with output path validation."""
-        self.__output_path = self.__validate_path(output_path)  # Private
-
-    def __validate_path(self, path: Path) -> Path:  # Private method
-        """Validate and secure output path."""
-        safe_path = path.resolve()  # Prevent path traversal
-        safe_path.parent.mkdir(parents=True, exist_ok=True)
-        return safe_path
+        super().__init__(output_path)
 
     @abstractmethod  # Abstraction
     def write(self, data: Any) -> None:
         """Abstract write method - must be implemented by subclasses."""
 
-    @abstractmethod
     def get_format(self) -> str:
         """Get output format name - must be implemented by subclasses."""
+        if self.format_name == "base":
+            raise NotImplementedError(
+                f"{self.__class__.__name__} must define format_name."
+            )
+        return self.format_name
 
     def __call__(self, data: Any) -> None:  # Magic method
         """Make writer callable."""
@@ -48,32 +50,22 @@ class BaseWriter(ABC):  # Abstraction
 
     def __repr__(self) -> str:  # Magic method
         """Detailed representation."""
-        return f"{self.__class__.__name__}(output_path={self.__output_path!r})"
+        return f"{self.__class__.__name__}(output_path={self.output_path!r})"
 
     def __eq__(self, other: object) -> bool:  # Magic method
         """Compare writers by output path."""
         if not isinstance(other, BaseWriter):
             return False
-        return self.__output_path == other.__output_path
+        return self.output_path == other.output_path
 
     def __hash__(self) -> int:  # Magic method
         """Hash based on output path."""
-        return hash(self.__output_path)
-
-    @property  # Encapsulation
-    def output_path(self) -> Path:
-        """Get output path (read-only)."""
-        return self.__output_path
-
-    @property  # Encapsulation
-    def output_directory(self) -> Path:
-        """Get output directory (read-only)."""
-        return self.__output_path.parent
+        return hash(self.output_path)
 
     @property  # Encapsulation
     def file_name(self) -> str:
         """Get file name (read-only)."""
-        return self.__output_path.name
+        return self.output_path.name
 
     def validate_data(self, data: Any) -> bool:
         """Validate data before writing."""
@@ -81,6 +73,6 @@ class BaseWriter(ABC):  # Abstraction
 
     def get_file_size(self) -> int:
         """Get output file size if exists."""
-        if self.__output_path.exists():
-            return self.__output_path.stat().st_size
+        if self.output_path.exists():
+            return self.output_path.stat().st_size
         return 0

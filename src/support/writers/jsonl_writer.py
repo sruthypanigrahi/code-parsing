@@ -10,6 +10,8 @@ from src.support.writers.base_writer import BaseWriter
 class JSONLWriter(BaseWriter):  # Inheritance and Polymorphism
     """JSONL file writer with proper encapsulation."""
 
+    format_name = "jsonl"
+
     def __init__(self, output_path: Path):
         """Initialize JSONL writer."""
         super().__init__(output_path)
@@ -24,10 +26,6 @@ class JSONLWriter(BaseWriter):  # Inheritance and Polymorphism
     def encoding(self) -> str:
         """Get file encoding."""
         return self.__encoding
-
-    def get_format(self) -> str:  # Polymorphism
-        """Get output format name."""
-        return "jsonl"
 
     def validate_data(self, data: Any) -> bool:  # Polymorphism
         """Validate data for JSONL format."""

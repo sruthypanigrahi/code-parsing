@@ -5,6 +5,7 @@ from typing import Any, Optional
 
 from src.config.constants import MAX_TITLE_LENGTH, MIN_TEXT_LENGTH
 from src.core.analyzer.content_analyzer import ContentAnalyzer
+from src.utils.mixins import StatsMixin
 
 
 @dataclass
@@ -18,19 +19,14 @@ class ContentItemData:
     block: dict[str, Any]
 
 
-class ContentProcessor:  # Encapsulation
+class ContentProcessor(StatsMixin):  # Encapsulation
     """Processes content with classification and validation."""
 
     def __init__(self) -> None:
         """Initialize content processor."""
+        super().__init__()
         self.__analyzer = ContentAnalyzer()  # Private composition
-        self.__stats: dict[str, int] = {}  # Private statistics
         self.__processing_mode = "standard"  # Private mode
-
-    @property
-    def stats(self) -> dict[str, int]:  # Encapsulation
-        """Get processing statistics (read-only)."""
-        return self.__stats.copy()
 
     @property
     def processing_mode(self) -> str:  # Encapsulation
@@ -84,7 +80,7 @@ class ContentProcessor:  # Encapsulation
 
     def __update_stats(self, content_type: str) -> None:
         """Update processing statistics."""
-        self.__stats[content_type] = self.__stats.get(content_type, 0) + 1
+        self._update_stat(content_type)
 
     def __create_content_item(self, data: ContentItemData) -> dict[str, Any]:
         """Create content item dictionary."""
@@ -119,7 +115,7 @@ class ContentProcessor:  # Encapsulation
 
     def reset_stats(self) -> None:
         """Reset processing statistics."""
-        self.__stats.clear()
+        super().reset_stats()
 
     def process_table_data(
         self, table: Any, page_num: int, table_num: int

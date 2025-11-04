@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
 
+from src.support.writers.base_writer import BaseWriter as _SupportBaseWriter
+
 
 class BaseExtractor(ABC):
     """Abstract base class for extractors (Abstraction)."""
@@ -19,7 +21,7 @@ class BaseExtractor(ABC):
     @property
     def config(self) -> dict[str, Any]:
         """Get configuration (read-only)."""
-        return self.__config.copy()
+        return {**self.__config}
 
     def __increment_count(self) -> None:  # Private method
         """Increment extraction counter."""
@@ -31,38 +33,16 @@ class BaseExtractor(ABC):
             raise FileNotFoundError(f"File not found: {file_path}")
         self.__increment_count()
 
-
-class BaseWriter(ABC):
-    """Abstract base class for writers (Abstraction)."""
-
-    def __init__(self, output_path: Path):
-        self.__output_path = self._validate_path(output_path)  # Private
-        self.__write_count: int = 0  # Private counter
-
-    def _validate_path(self, path: Path) -> Path:  # Encapsulation
-        """Validate and secure output path."""
-        safe_path = path.resolve()  # Prevent path traversal
-        try:
-            safe_path.parent.mkdir(parents=True, exist_ok=True)
-        except OSError as e:
-            raise RuntimeError(
-                f"Cannot create directory {safe_path.parent}: {e}"
-            ) from e
-        return safe_path
-
-    @abstractmethod
-    def write(self, data: Any) -> None:
-        """Abstract write method (Abstraction)."""
-        self.__increment_write_count()  # Track write operations
-
     @property
-    def output_path(self) -> Path:
-        """Getter for output path (Encapsulation)."""
-        return self.__output_path
+    def extraction_count(self) -> int:
+        """Number of validated files processed by this extractor."""
+        return self.__extraction_count
 
-    def __increment_write_count(self) -> None:  # Private method
-        """Increment write counter."""
-        self.__write_count += 1
+
+class BaseWriter(_SupportBaseWriter):
+    """Compatibility wrapper around the shared support BaseWriter."""
+
+    __slots__ = ()
 
 
 class Processor:
@@ -84,7 +64,7 @@ class Processor:
     @property
     def name(self) -> str:
         """Getter for name (Encapsulation)."""
-        return self.__name
+        return f"{self.__name}"
 
     def process_item(self, item: Any) -> Any:
         """Process single item with tracking."""

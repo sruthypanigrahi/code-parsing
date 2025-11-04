@@ -5,17 +5,18 @@ from collections.abc import Iterator
 from typing import Any
 
 from src.config.constants import MIN_LINE_LENGTH
+from src.utils.mixins import StatsMixin
 
 from .base_analyzer import PatternAnalyzer
 
 
-class ContentAnalyzer:
+class ContentAnalyzer(StatsMixin):
     """Content analyzer using pattern matching."""
 
     def __init__(self) -> None:
+        super().__init__()
         self.__analyzer = PatternAnalyzer()  # Private
         self.__analysis_cache: dict[str, str] = {}  # Private cache
-        self.__stats: dict[str, int] = {}  # Private statistics
 
     def classify(self, text: str) -> str:  # Abstraction
         """Classify text content type."""
@@ -38,7 +39,7 @@ class ContentAnalyzer:
 
     def _update_classification_stats(self, result: str) -> None:
         """Update classification statistics."""
-        self.__stats[result] = self.__stats.get(result, 0) + 1
+        self._update_stat(result)
 
     def is_major_section(self, text: str) -> bool:
         """Check if text is a major section header."""
@@ -101,7 +102,7 @@ class ContentAnalyzer:
     @property
     def classification_stats(self) -> dict[str, int]:
         """Get classification statistics (read-only)."""
-        return self.__stats.copy()
+        return self.stats
 
     def clear_cache(self) -> None:
         """Clear analysis cache."""
@@ -109,7 +110,7 @@ class ContentAnalyzer:
 
     def _reset_stats(self) -> None:
         """Reset classification statistics."""
-        self.__stats.clear()
+        self.reset_stats()
 
     def get_cache_size(self) -> int:
         """Get current cache size."""

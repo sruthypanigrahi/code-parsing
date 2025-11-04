@@ -18,10 +18,16 @@ class Cacheable(ABC):
     @abstractmethod
     def get_cache_key(self) -> str:
         """Get unique cache key."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement get_cache_key()."
+        )
 
     @abstractmethod
     def clear_cache(self) -> None:
         """Clear object cache."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement clear_cache()."
+        )
 
     def __hash__(self) -> int:  # Magic method
         """Hash based on cache key."""
@@ -34,14 +40,23 @@ class Configurable(ABC):
     @abstractmethod
     def configure(self, **kwargs: Any) -> None:
         """Configure object with parameters."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement configure()."
+        )
 
     @abstractmethod
     def get_config(self) -> dict[str, Any]:
         """Get current configuration."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement get_config()."
+        )
 
     @abstractmethod
     def reset_config(self) -> None:
         """Reset to default configuration."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement reset_config()."
+        )
 
 
 class Validatable(ABC):
@@ -50,10 +65,16 @@ class Validatable(ABC):
     @abstractmethod
     def validate(self) -> bool:
         """Validate object state."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement validate()."
+        )
 
     @abstractmethod
     def get_validation_errors(self) -> list[str]:
         """Get validation error messages."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement get_validation_errors()."
+        )
 
     def is_valid(self) -> bool:
         """Check if object is valid."""
@@ -66,10 +87,16 @@ class Serializable(ABC):
     @abstractmethod
     def serialize(self) -> dict[str, Any]:
         """Serialize object to dictionary."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement serialize()."
+        )
 
     @abstractmethod
     def deserialize(self, data: dict[str, Any]) -> None:
         """Deserialize from dictionary."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement deserialize()."
+        )
 
     def to_json(self) -> str:
         """Convert to JSON string."""

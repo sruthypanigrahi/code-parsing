@@ -19,7 +19,7 @@ class BaseAnalyzer(ABC):
 
     def __str__(self) -> str:  # Magic method polymorphism
         """String representation."""
-        return f"{self.__class__.__name__}()"
+        return f"{self.__class__.__module__}.{self.__class__.__name__}()"
 
 
 class AnalyzerProtocol(Protocol):  # Protocol for polymorphism

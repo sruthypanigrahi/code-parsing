@@ -1,29 +1,34 @@
-# USB PD Specification Parser - Performance Benchmarking
-"""Minimal benchmarks with OOP principles."""
+"""USB PD Specification Parser - Performance Benchmarking."""
+
+from __future__ import annotations
 
 import logging
 import time
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from typing import Any
 
 
 class BaseBenchmark(ABC):  # Abstraction
+    """Base benchmark definition."""
+
     def __init__(self, name: str) -> None:
-        """Initialize benchmark with name."""
         self.__name = name  # Private
 
     @property
-    def _name(self) -> str:  # Protected property for subclasses
-        """Get benchmark name for subclasses."""
-        return self.__name
+    def name(self) -> str:
+        """Human-friendly benchmark name."""
+        return str(self.__name)
 
-    @abstractmethod  # Abstraction
+    @abstractmethod
     def run(self) -> dict[str, Any]:
-        pass
+        """Execute the benchmark and return summary data."""
 
 
 class ConfigBenchmark(BaseBenchmark):  # Inheritance
-    def run(self) -> dict[str, Any]:  # Polymorphism
+    """Benchmark configuration access."""
+
+    def run(self) -> dict[str, Any]:
         """Run config benchmark."""
         from src.config import Config
 
@@ -32,11 +37,13 @@ class ConfigBenchmark(BaseBenchmark):  # Inheritance
         for _ in range(100):
             _ = config.pdf_input_file
         elapsed = time.perf_counter() - start
-        return {"name": self._name, "time": elapsed, "ops": 100}
+        return {"name": self.name, "time": elapsed, "ops": 100}
 
 
 class ModelBenchmark(BaseBenchmark):  # Inheritance
-    def run(self) -> dict[str, Any]:  # Polymorphism
+    """Benchmark model instantiation."""
+
+    def run(self) -> dict[str, Any]:
         """Run model benchmark."""
         start = time.perf_counter()
         from src.core.models import BaseContent
@@ -44,22 +51,36 @@ class ModelBenchmark(BaseBenchmark):  # Inheritance
         for i in range(200):
             BaseContent(page=i + 1, content=f"test {i}")
         elapsed = time.perf_counter() - start
-        return {"name": self._name, "time": elapsed, "ops": 200}
+        return {"name": self.name, "time": elapsed, "ops": 200}
 
 
-class BenchmarkRunner:  # Encapsulation
+class BenchmarkSuite:
+    """Collects benchmarks and executes them as a batch."""
+
     def __init__(self) -> None:
-        """Initialize benchmark runner."""
-        self.__benchmarks: list[BaseBenchmark] = []  # Private
+        self._benchmarks: list[BaseBenchmark] = []
 
-    def add(self, benchmark: BaseBenchmark) -> None:  # Polymorphism
-        """Add benchmark to runner."""
-        self.__benchmarks.append(benchmark)
+    def add(self, benchmark: BaseBenchmark) -> None:
+        """Register a benchmark in the suite."""
+        self._benchmarks.append(benchmark)
 
-    def run_all(self) -> None:  # Abstraction
-        """Run all benchmarks."""
-        for benchmark in self.__benchmarks:
-            result = benchmark.run()  # Polymorphism
+    def __iter__(self) -> Iterable[BaseBenchmark]:
+        return iter(self._benchmarks)
+
+    def run(self) -> list[dict[str, Any]]:
+        """Execute all benchmarks and return their summaries."""
+        return [benchmark.run() for benchmark in self._benchmarks]
+
+
+class BenchmarkCLI:
+    """CLI adapter responsible for presenting benchmark results."""
+
+    def __init__(self, suite: BenchmarkSuite):
+        self._suite = suite
+
+    def run(self) -> None:
+        """Execute the suite and print formatted results."""
+        for result in self._suite.run():
             name = result["name"]
             time_val = result["time"]
             ops = result["ops"]
@@ -67,13 +88,19 @@ class BenchmarkRunner:  # Encapsulation
             print(msg)
 
 
+def build_default_suite() -> BenchmarkSuite:
+    """Create a suite populated with default benchmarks."""
+    suite = BenchmarkSuite()
+    suite.add(ConfigBenchmark("Config"))
+    suite.add(ModelBenchmark("Model"))
+    return suite
+
+
 def main() -> None:
     """Main benchmark entry point."""
     logging.basicConfig(level=logging.INFO)
-    runner = BenchmarkRunner()
-    runner.add(ConfigBenchmark("Config"))
-    runner.add(ModelBenchmark("Model"))
-    runner.run_all()
+    suite = build_default_suite()
+    BenchmarkCLI(suite).run()
 
 
 if __name__ == "__main__":

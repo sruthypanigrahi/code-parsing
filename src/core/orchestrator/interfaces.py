@@ -54,11 +54,14 @@ class PipelineInterface(ABC):
     @abstractmethod
     def run(self) -> dict[str, Any]:
         """Execute pipeline."""
+        raise NotImplementedError("PipelineInterface.run() must be overridden.")
 
     @abstractmethod
     def run_toc_only(self) -> Any:
         """Extract TOC only."""
+        raise NotImplementedError("PipelineInterface.run_toc_only() must be overridden.")
 
     @abstractmethod
     def run_content_only(self) -> int:
         """Extract content only."""
+        raise NotImplementedError("PipelineInterface.run_content_only() must be overridden.")

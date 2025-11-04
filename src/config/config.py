@@ -15,9 +15,6 @@ class Config(BaseConfig):  # Inheritance
 
     __DEFAULT_PDF = DEFAULT_PDF_PATH  # Private class attribute
 
-    def __init__(self, config_path: str):
-        super().__init__(config_path)
-
     def __str__(self) -> str:  # Magic Method
         pdf_name = self.pdf_input_file.name
         output_name = self.output_directory.name

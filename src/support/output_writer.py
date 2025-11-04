@@ -1,6 +1,6 @@
 """Output writers - Modular Architecture."""
 
-# Re-export from modular writers for backward compatibility
+# Re-export from modular writer for backward compatibility
 from src.support.writers import (
     BaseWriter,
     CSVWriter,

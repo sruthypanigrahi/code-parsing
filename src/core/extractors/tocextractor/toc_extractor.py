@@ -41,15 +41,13 @@ class TOCExtractor(BaseTOCExtractor):  # Inheritance
             parent_id = self.__get_parent_id(section_id)
             full_path = self.__build_full_path(section_id, clean_title)
 
-            entry = TOCEntry(
-                doc_title="USB PD Specification",
+            entry = self._build_entry(
                 section_id=section_id,
                 title=clean_title,
-                full_path=full_path,
                 page=page,
                 level=level,
                 parent_id=parent_id,
-                tags=[],
+                full_path=full_path,
             )
             entries.append(entry)
 

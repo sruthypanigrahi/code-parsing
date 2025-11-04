@@ -30,12 +30,6 @@ class ExtractionEngine:  # Composition and Encapsulation
         """Detailed representation."""
         return f"ExtractionEngine(pdf_path={self.__pdf_reader.pdf_path!r})"
 
-    def __call__(
-        self, max_pages: Optional[int] = None
-    ) -> list[dict[str, Any]]:
-        """Make engine callable."""
-        return self.extract_content(max_pages)
-
     def __len__(self) -> int:  # Magic method
         """Return number of extracted items."""
         return len(self.extract_content())
@@ -117,7 +111,7 @@ class ExtractionEngine:  # Composition and Encapsulation
         """Comprehensive extraction mode - includes tables."""
         for page_num in range(total_pages):
             yield from self.__extract_page_content(page_num)
-            yield from self.__extract_page_tables(page_num)
+            yield from self.__extract_page_tables()
 
     def __extract_page_content(
         self, page_num: int
@@ -130,7 +124,7 @@ class ExtractionEngine:  # Composition and Encapsulation
             if content_item:
                 yield content_item
 
-    def __extract_page_tables(self, page_num: int) -> Iterator[dict[str, Any]]:
+    def __extract_page_tables(self) -> Iterator[dict[str, Any]]:
         """Extract tables from a page."""
         try:
             # Table extraction would be implemented here

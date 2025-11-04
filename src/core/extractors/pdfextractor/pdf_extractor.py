@@ -46,16 +46,6 @@ class PDFExtractor(BaseExtractor):  # Inheritance
         return hash(self.pdf_path)
 
     @property
-    def pdf_path(self) -> Path:  # Encapsulation
-        """Get PDF file path (read-only)."""
-        return self._pdf_path
-
-    @property
-    def pdf_name(self) -> str:  # Encapsulation
-        """Get PDF file name (read-only)."""
-        return self._pdf_path.name
-
-    @property
     def extraction_stats(self) -> dict[str, int]:  # Encapsulation
         """Get extraction statistics (read-only)."""
         return self.__engine.extraction_stats

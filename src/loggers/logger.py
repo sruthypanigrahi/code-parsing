@@ -13,6 +13,7 @@ class LoggerFactory(BaseLoggerFactory):  # Inheritance
     def create_logger(
         self, output_dir: Optional[Path] = None, debug: bool = False
     ) -> logging.Logger:  # Polymorphism
+        """Build or reuse a configured logger."""
         logger = logging.getLogger(self._name)
         log_level = logging.DEBUG if debug else logging.INFO
         logger.setLevel(log_level)
@@ -26,6 +27,7 @@ class LoggerFactory(BaseLoggerFactory):  # Inheritance
     def _add_console_handler(
         self, logger: logging.Logger, log_level: int
     ) -> None:  # Encapsulation
+        """Attach a console handler to the logger."""
         ch = logging.StreamHandler()
         ch.setLevel(log_level)
         ch.setFormatter(self._formatter)
@@ -34,6 +36,7 @@ class LoggerFactory(BaseLoggerFactory):  # Inheritance
     def _add_file_handler(
         self, logger: logging.Logger, output_dir: Path, log_level: int
     ) -> None:  # Encapsulation
+        """Attach a file handler after validating the destination path."""
         try:
             safe_dir = self._validate_output_dir(output_dir)
             # Additional security check before mkdir

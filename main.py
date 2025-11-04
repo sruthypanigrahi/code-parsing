@@ -15,6 +15,7 @@ class BaseRunner(ABC):  # Abstraction
     @abstractmethod
     def create_app(self) -> Any:
         """Create application instance."""
+        raise NotImplementedError("BaseRunner subclasses must implement create_app().")
 
     def run(self) -> None:
         """Run the application."""

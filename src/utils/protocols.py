@@ -9,7 +9,9 @@ class Extractable(Protocol):  # Protocol Abstraction
 
     def extract(self) -> Any:
         """Extract data."""
-        ...
+        raise NotImplementedError(
+            "Extractable implementations must define extract()."
+        )
 
 
 class Searchable(Protocol):  # Protocol Abstraction
@@ -17,7 +19,9 @@ class Searchable(Protocol):  # Protocol Abstraction
 
     def search(self, term: str) -> list[dict[str, Any]]:
         """Search for term."""
-        ...
+        raise NotImplementedError(
+            "Searchable implementations must define search()."
+        )
 
 
 class Displayable(Protocol):  # Protocol Abstraction
@@ -25,7 +29,9 @@ class Displayable(Protocol):  # Protocol Abstraction
 
     def show(self, data: Any, term: str) -> None:
         """Display data."""
-        ...
+        raise NotImplementedError(
+            "Displayable implementations must define show()."
+        )
 
 
 class Configurable(Protocol):  # Protocol Abstraction
@@ -34,12 +40,16 @@ class Configurable(Protocol):  # Protocol Abstraction
     @property
     def pdf_input_file(self) -> Path:
         """Get PDF input file path."""
-        ...
+        raise NotImplementedError(
+            "Configurable objects must expose pdf_input_file."
+        )
 
     @property
     def output_directory(self) -> Path:
         """Get output directory path."""
-        ...
+        raise NotImplementedError(
+            "Configurable objects must expose output_directory."
+        )
 
 
 class Writable(Protocol):  # Protocol Abstraction
@@ -47,7 +57,9 @@ class Writable(Protocol):  # Protocol Abstraction
 
     def write(self, data: Any) -> None:
         """Write data."""
-        ...
+        raise NotImplementedError(
+            "Writable implementations must define write()."
+        )
 
 
 class Cacheable(Protocol):  # Protocol Abstraction
@@ -55,15 +67,21 @@ class Cacheable(Protocol):  # Protocol Abstraction
 
     def cache_get(self, key: str) -> Any:
         """Get from cache."""
-        ...
+        raise NotImplementedError(
+            "Cacheable implementations must define cache_get()."
+        )
 
     def cache_set(self, key: str, value: Any) -> None:
         """Set cache value."""
-        ...
+        raise NotImplementedError(
+            "Cacheable implementations must define cache_set()."
+        )
 
     def cache_clear(self) -> None:
         """Clear cache."""
-        ...
+        raise NotImplementedError(
+            "Cacheable implementations must define cache_clear()."
+        )
 
 
 # Concrete implementations for polymorphism
@@ -77,11 +95,11 @@ class BaseExtractable:  # Base class for extractable objects
     @property
     def extraction_count(self) -> int:
         """Get extraction count."""
-        return self.__extraction_count
+        return int(self.__extraction_count)
 
     def __increment_count(self) -> None:  # Private method
         """Increment extraction counter."""
-        self.__extraction_count += 1
+        self.__extraction_count = self.__extraction_count + 1
 
     def __cache_result(self, result: Any) -> None:  # Private method
         """Cache extraction result."""

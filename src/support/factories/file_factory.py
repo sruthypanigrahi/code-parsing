@@ -10,7 +10,9 @@ class FileGenerator(ABC):
 
     @abstractmethod
     def generate(self, data: list[dict[str, Any]], output_path: Path) -> None:
-        pass
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement generate()."
+        )
 
 
 class MetadataGenerator(FileGenerator):

@@ -30,7 +30,9 @@ class BaseConfig(ABC):
 
     @abstractmethod  # Protected abstract method
     def load_config(self) -> dict[str, Any]:
-        pass
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement load_config()."
+        )
 
     def _load_config(self) -> dict[str, Any]:
         """Load config using the abstract method."""
@@ -38,7 +40,9 @@ class BaseConfig(ABC):
 
     @abstractmethod  # Protected abstract method
     def get_defaults(self) -> dict[str, Any]:
-        pass
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement get_defaults()."
+        )
 
     # Public interface methods
     def get_config_path(self) -> Path:

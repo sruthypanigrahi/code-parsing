@@ -26,4 +26,4 @@ class BasePipeline(ABC):  # Abstraction
 
     @abstractmethod  # Abstraction
     def run(self) -> dict[str, Any]:
-        pass
+        raise NotImplementedError("Subclasses must implement BasePipeline.run().")

@@ -26,7 +26,9 @@ class BaseProfiler(ABC):  # Abstraction
 
     @abstractmethod  # Abstraction
     def profile_operation(self) -> dict[str, Any]:
-        pass
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement profile_operation()."
+        )
 
     def _run_profiled(
         self, func: Callable[..., Any], *args: Any

@@ -3,30 +3,26 @@
 from pathlib import Path
 from typing import Any, Union
 
-from src.config.constants import MIN_CONTENT_THRESHOLD
-
 from .report_generator import BaseReportGenerator  # Import base class
 
 try:
     import openpyxl
 
-    has_openpyxl = True
+    HAS_OPENPYXL = True
 except ImportError:
-    has_openpyxl = False
+    HAS_OPENPYXL = False
     openpyxl = None  # type: ignore
 
 
 class ExcelReportGenerator(BaseReportGenerator):  # Inheritance
-    def get_report_type(self) -> str:
-        """Get report type name."""
-        return "excel"
+    """Concrete Excel implementation of the report generator interface."""
 
-    def get_file_extension(self) -> str:
-        """Get file extension for this report type."""
-        return ".xlsx"
+    report_type = "excel"
+    file_extension = ".xlsx"
 
-    def generate(self, data: dict[str, Any]) -> Path:  # Polymorphism
-        if not has_openpyxl or openpyxl is None:
+    def _render(self, data: dict[str, Any]) -> Path:  # Polymorphism
+        """Create an XLSX validation report from the supplied data."""
+        if not HAS_OPENPYXL or openpyxl is None:
             msg = "openpyxl is required for Excel report generation"
             raise ImportError(msg)
 
@@ -38,24 +34,17 @@ class ExcelReportGenerator(BaseReportGenerator):  # Inheritance
             raise RuntimeError(f"Cannot create Excel workbook: {e}") from e
         try:
             ws.title = "Validation"  # type: ignore
-
             # Headers
             ws["A1"] = "Metric"  # type: ignore
             ws["B1"] = "Value"  # type: ignore
 
             # Data
+            status = self._determine_validation_status(data)
             metrics: list[tuple[str, Union[int, str]]] = [
                 ("Pages", data.get("pages", 0)),
                 ("Content Items", data.get("content_items", 0)),
                 ("TOC Entries", data.get("toc_entries", 0)),
-                (
-                    "Status",
-                    (
-                        "PASS"
-                        if data.get("content_items", 0) > MIN_CONTENT_THRESHOLD
-                        else "FAIL"
-                    ),
-                ),
+                ("Status", status),
             ]
 
             for i, (metric, value) in enumerate(metrics, 2):

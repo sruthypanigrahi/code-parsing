@@ -5,6 +5,7 @@ from typing import Any, Optional
 
 from src.config.config import Config
 from src.core.orchestrator.base_pipeline import BasePipeline
+from src.core.orchestrator.component import PipelineComponent
 from src.core.orchestrator.data_extractor import DataExtractor
 from src.core.orchestrator.file_manager import FileManager
 from src.core.orchestrator.interfaces import PipelineInterface
@@ -12,36 +13,28 @@ from src.core.orchestrator.report_manager import ReportManager
 from src.utils.decorators import log_execution, timing
 
 
-class PipelineCoordinator(BasePipeline, PipelineInterface):
-    """Coordinates pipeline execution with proper separation of concerns."""
+class PipelineCoordinator(PipelineComponent, BasePipeline, PipelineInterface):
+    """Coordinates pipeline execution with separation of concerns."""
 
     def __init__(self, config_path: str):
         """Initialize pipeline coordinator with configuration."""
         if not config_path:
-            raise ValueError("Config path must be a non-empty string")
+            raise ValueError("Config path cannot be empty")
 
         class_name = self.__class__.__name__
-        self.__logger = logging.getLogger(class_name)  # Private
+        logger = logging.getLogger(class_name)
         try:
-            self.__config = Config(config_path)  # Private
-            self.__logger.info("Configuration loaded from %s", config_path)
+            config = Config(config_path)
+            logger.info("Configuration loaded from %s", config_path)
         except (ValueError, OSError) as e:
             raise RuntimeError(f"Configuration error: {e}") from e
 
+        super().__init__(config, logger)
+
         # Initialize components with dependency injection
-        self.__data_extractor = DataExtractor(self.__config, self.__logger)
-        self.__file_manager = FileManager(self.__config, self.__logger)
-        self.__report_manager = ReportManager(self.__config, self.__logger)
-
-    @property
-    def config(self) -> Config:  # Encapsulation
-        """Get configuration (read-only access)."""
-        return self.__config
-
-    @property
-    def logger(self) -> Any:  # Encapsulation
-        """Get logger (read-only access)."""
-        return self.__logger
+        self.__data_extractor = DataExtractor(self.config, self.logger)
+        self.__file_manager = FileManager(self.config, self.logger)
+        self.__report_manager = ReportManager(self.config, self.logger)
 
     def __get_max_pages(self) -> Optional[int]:  # Private method
         """Get max pages for processing."""
@@ -56,14 +49,14 @@ class PipelineCoordinator(BasePipeline, PipelineInterface):
     def run(self) -> dict[str, Any]:  # Polymorphism
         """Execute the complete pipeline."""
         mode_name = self.__get_mode_name()
-        self.__logger.info("Starting pipeline execution - %s", mode_name)
+        self.logger.info("Starting pipeline execution - %s", mode_name)
 
         max_pages = self.__get_max_pages()
         toc, content = self.__data_extractor.extract_data(max_pages)
         self.__file_manager.write_files(toc, content)
         counts = self.__report_manager.generate_reports(toc, content)
 
-        self.__logger.info("Pipeline execution completed successfully")
+        self.logger.info("Pipeline execution completed successfully")
         return {"toc_entries": len(toc), "spec_counts": counts}
 
     def run_toc_only(self) -> Any:  # Polymorphism

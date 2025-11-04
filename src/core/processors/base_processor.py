@@ -1,13 +1,15 @@
 """Base processor classes for enhanced polymorphism."""
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, ClassVar
 
 from src.utils.interfaces import Cacheable, Configurable, Validatable
 
 
 class BaseProcessor(Cacheable, Configurable, Validatable, ABC):
     """Abstract base processor with multiple inheritance."""
+
+    processor_type: ClassVar[str] = "base"
 
     def __init__(self, name: str) -> None:
         self.__name = name  # Private
@@ -19,9 +21,9 @@ class BaseProcessor(Cacheable, Configurable, Validatable, ABC):
     def process(self, data: Any) -> Any:
         """Process input data."""
 
-    @abstractmethod
     def get_processor_type(self) -> str:
         """Get processor type name."""
+        return self.processor_type
 
     # Cacheable interface methods
     def get_cache_key(self) -> str:
@@ -40,7 +42,7 @@ class BaseProcessor(Cacheable, Configurable, Validatable, ABC):
 
     def get_config(self) -> dict[str, Any]:
         """Get current configuration."""
-        return self.__config.copy()
+        return dict(self.__config)
 
     def reset_config(self) -> None:
         """Reset to default configuration."""
@@ -76,9 +78,7 @@ class BaseProcessor(Cacheable, Configurable, Validatable, ABC):
 class TextProcessor(BaseProcessor):
     """Text processing implementation."""
 
-    def get_processor_type(self) -> str:
-        """Get processor type name."""
-        return "text"
+    processor_type: ClassVar[str] = "text"
 
     def process(self, data: Any) -> str:
         """Process text data."""
@@ -90,9 +90,7 @@ class TextProcessor(BaseProcessor):
 class DataProcessor(BaseProcessor):
     """Data processing implementation."""
 
-    def get_processor_type(self) -> str:
-        """Get processor type name."""
-        return "data"
+    processor_type: ClassVar[str] = "data"
 
     def process(self, data: Any) -> dict[str, Any]:
         """Process data structures."""

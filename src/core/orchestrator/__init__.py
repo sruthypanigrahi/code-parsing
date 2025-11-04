@@ -1,5 +1,6 @@
 """Pipeline orchestrator exports"""
 
+from .component import PipelineComponent
 from .data_extractor import DataExtractor
 from .file_manager import FileManager
 from .interfaces import (
@@ -17,6 +18,7 @@ __all__ = [
     "DataExtractorInterface",
     "FileManager",
     "FileManagerInterface",
+    "PipelineComponent",
     "PipelineCoordinator",
     "PipelineInterface",
     "PipelineOrchestrator",

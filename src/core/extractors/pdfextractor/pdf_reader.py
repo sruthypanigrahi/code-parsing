@@ -21,19 +21,9 @@ class PDFReader(BaseExtractor):  # Inheritance
         """Context manager entry."""
         return self
 
-    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+    def __exit__(self, _exc_type: Any, _exc_val: Any, _exc_tb: Any) -> None:
         """Context manager exit with cleanup."""
         self.clear_cache()
-
-    @property
-    def pdf_path(self) -> Path:  # Encapsulation
-        """Get PDF file path (read-only)."""
-        return self._pdf_path
-
-    @property
-    def pdf_name(self) -> str:  # Encapsulation
-        """Get PDF file name (read-only)."""
-        return self._pdf_path.name
 
     def clear_cache(self) -> None:
         """Clear all caches."""
@@ -43,10 +33,10 @@ class PDFReader(BaseExtractor):  # Inheritance
     @log_execution
     def open_document(self) -> Any:
         """Open PDF document with caching."""
-        cache_key = str(self._pdf_path)
+        cache_key = str(self.pdf_path)
         if cache_key not in self.__document_cache:
             fitz = self._get_fitz()
-            self.__document_cache[cache_key] = fitz.open(str(self._pdf_path))
+            self.__document_cache[cache_key] = fitz.open(str(self.pdf_path))
         return self.__document_cache[cache_key]
 
     def get_page_count(self) -> int:
@@ -81,7 +71,7 @@ class PDFReader(BaseExtractor):  # Inheritance
                         "page_num": page_num,
                     }
         except Exception as e:
-            self._logger.warning("Error extracting page %s: %s", page_num, e)
+            self.logger.warning("Error extracting page %s: %s", page_num, e)
 
     def __should_process_block(self, block: dict[str, Any]) -> bool:
         """Check if block should be processed."""

@@ -1,10 +1,12 @@
 """Search entry point with OOP principles."""
 
+from __future__ import annotations
+
 import logging
 import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 from src.config.constants import (
     DEFAULT_OUTPUT_DIR,
@@ -18,53 +20,79 @@ from src.support.search.search_app import SearchApp
 from src.support.search.search_display import SearchDisplay
 from src.utils.decorators import timing
 
+AppFactory = Callable[[str], SearchApp]
+RunnerBuilder = Callable[[], "BaseRunner"]
+
 
 class BaseRunner(ABC):  # Abstraction
-    """Abstract runner (Abstraction, Encapsulation)."""
+    """Abstract runner that coordinates app execution."""
 
     def __init__(self) -> None:
-        """Initialize base runner."""
         self._app: Optional[SearchApp] = None  # Encapsulation
         self._logger = logging.getLogger(self.__class__.__name__)
 
     @abstractmethod  # Abstraction
     def create_app(self, file_path: str) -> SearchApp:
-        pass
+        """Build the SearchApp that will execute."""
 
     @timing
     def run(self, term: str, file_path: str) -> None:  # Template method
         """Run search with sanitized inputs."""
-        # Sanitize inputs to prevent command injection
         safe_term = self._sanitize_input(term)
         self._app = self.create_app(file_path)  # Encapsulation
         self._app.run(safe_term)  # Polymorphism
 
     def _sanitize_input(self, term: str) -> str:  # Encapsulation
         """Sanitize search term to prevent command injection."""
-        # Remove dangerous characters and limit length
         safe_chars = "".join(c for c in term if c.isalnum() or c in " -_")
-        return safe_chars[:MAX_TERM_LENGTH]  # Limit length
+        return safe_chars[:MAX_TERM_LENGTH]
 
 
 class SearchRunner(BaseRunner):  # Inheritance
-    """Search runner (Inheritance, Polymorphism)."""
+    """Search runner with injectable collaborators."""
+
+    def __init__(
+        self,
+        searcher_factory: Callable[[str], JSONLSearcher] | None = None,
+        display_factory: Callable[[], SearchDisplay] | None = None,
+    ) -> None:
+        super().__init__()
+        self._searcher_factory = searcher_factory or JSONLSearcher
+        self._display_factory = display_factory or SearchDisplay
 
     def create_app(self, file_path: str) -> SearchApp:  # Polymorphism
         """Create search application."""
-        searcher = JSONLSearcher(file_path)  # Factory pattern
-        display = SearchDisplay()
+        searcher = self._searcher_factory(file_path)
+        display = self._display_factory()
         return SearchApp(searcher, display)
 
 
-class RunnerFactory:  # Abstraction
-    """Runner factory (Abstraction, Encapsulation)."""
+class RunnerFactory:
+    """Registry-backed factory for runner instances."""
 
-    @staticmethod  # Encapsulation
-    def create_runner(runner_type: str = "search") -> BaseRunner:
+    _BUILDERS: dict[str, RunnerBuilder] = {}
+
+    @classmethod
+    def register(cls, runner_type: str, builder: RunnerBuilder) -> None:
+        """Register a runner builder."""
+        cls._BUILDERS[runner_type.lower()] = builder
+
+    @classmethod
+    def create_runner(cls, runner_type: str = "search") -> BaseRunner:
         """Create runner instance."""
-        if runner_type == "search":
-            return SearchRunner()  # Polymorphism
-        raise ValueError(f"Invalid runner type: {runner_type}")
+        key = runner_type.lower()
+        try:
+            builder = cls._BUILDERS[key]
+        except KeyError as exc:
+            available = ", ".join(sorted(cls._BUILDERS))
+            raise ValueError(
+                f"Invalid runner type: {runner_type}. Available: {available}"
+            ) from exc
+        return builder()
+
+
+# Register default runner
+RunnerFactory.register("search", SearchRunner)
 
 
 @timing
@@ -77,13 +105,9 @@ def main() -> None:
         sys.exit(1)
 
     term = sys.argv[1]
-    if len(sys.argv) > MIN_ARGS_COUNT:
-        file_path = sys.argv[2]
-    else:
-        file_path = DEFAULT_SEARCH_FILE
+    file_path = sys.argv[2] if len(sys.argv) > MIN_ARGS_COUNT else DEFAULT_SEARCH_FILE
 
     try:
-        # Factory pattern (Abstraction)
         runner = RunnerFactory.create_runner("search")  # Polymorphism
         runner.run(term, file_path)  # Polymorphism
     except Exception as e:

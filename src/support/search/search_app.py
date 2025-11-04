@@ -6,99 +6,150 @@ from .base_search import BaseSearcher
 from .search_display import SearchDisplay
 
 
-class SearchApp:  # Composition
-    def __init__(self, searcher: BaseSearcher, display: SearchDisplay):
-        self.__searcher = searcher  # Private encapsulation
-        self.__display = display  # Private encapsulation
-        self.__search_history: list[str] = []  # Private history
-        self.__result_cache: dict[str, list[Any]] = {}  # Private cache
+class SearchState:
+    """Encapsulate search history and cached results."""
 
-    def __str__(self) -> str:  # Magic Method
-        return f"SearchApp(searcher={type(self.__searcher).__name__})"
+    def __init__(self) -> None:
+        self._history: list[str] = []
+        self._cache: dict[str, list[Any]] = {}
 
-    def __len__(self) -> int:  # Magic Method
-        """Return number of searches performed."""
-        return len(self.__search_history)
+    def remember(self, term: str) -> None:
+        """Store a search term in history."""
+        if term not in self._history:
+            self._history.append(term)
 
-    def __contains__(self, term: str) -> bool:  # Magic Method
-        """Check if term was searched before."""
-        return term in self.__search_history
+    def cache(self, term: str, results: list[Any]) -> None:
+        """Persist results for a term."""
+        self._cache[term] = results
 
-    def __call__(self, term: str) -> None:  # Magic Method
-        return self.run(term)
+    def fetch(self, term: str) -> list[Any] | None:
+        """Retrieve cached results if available."""
+        return self._cache.get(term)
 
-    def run(self, term: str) -> None:  # Polymorphism
-        validated_term = self.__validate_search_term(term)
-        matches = self.__get_cached_or_search(validated_term)
-        self.__show_results(matches, validated_term)
-        self.__add_to_history(validated_term)
+    def clear_cache(self) -> None:
+        """Drop cached search results."""
+        self._cache.clear()
 
-    def run_cached(self, term: str) -> None:  # Polymorphism
-        """Run search with caching enabled."""
-        self.run(term)
+    def clear_history(self) -> None:
+        """Drop recorded search history."""
+        self._history.clear()
 
-    def run_fresh(self, term: str) -> None:  # Polymorphism
-        """Run search without using cache."""
-        validated_term = self.__validate_search_term(term)
-        matches = self.__perform_search(validated_term)
-        self.__show_results(matches, validated_term)
-        self.__add_to_history(validated_term)
+    @property
+    def history(self) -> list[str]:
+        """Read-only access to history."""
+        return self._history.copy()
 
-    def __validate_search_term(
-        self, term: str
-    ) -> str:  # Private - only used internally
-        """Validate search term."""
+    @property
+    def cache_size(self) -> int:
+        """Current cache size."""
+        return len(self._cache)
+
+
+class SearchCoordinator:
+    """Coordinate validation, execution, and presentation of searches."""
+
+    def __init__(
+        self,
+        searcher: BaseSearcher,
+        display: SearchDisplay,
+        state: SearchState,
+    ) -> None:
+        self._searcher = searcher
+        self._display = display
+        self._state = state
+
+    def run(self, term: str, use_cache: bool = True) -> None:
+        """Execute a search, optionally consulting the cache."""
+        validated_term = self._validate_term(term)
+        results = (
+            self._get_cached_or_search(validated_term)
+            if use_cache
+            else self._perform_search(validated_term)
+        )
+        self._display.show(results, validated_term)
+        self._state.remember(validated_term)
+        if not use_cache:
+            self._state.cache(validated_term, results)
+
+    def _perform_search(self, term: str) -> list[Any]:
+        """Delegate to the injected searcher."""
+        return self._searcher.search(term)
+
+    def _get_cached_or_search(self, term: str) -> list[Any]:
+        """Return cached results when present."""
+        cached = self._state.fetch(term)
+        if cached is not None:
+            return cached
+        results = self._perform_search(term)
+        self._state.cache(term, results)
+        return results
+
+    @staticmethod
+    def _validate_term(term: str) -> str:
+        """Strip and validate incoming search terms."""
         if not term or not term.strip():
             raise ValueError("Search term cannot be empty")
         return term.strip()
 
-    def __perform_search(
-        self, term: str
-    ) -> list[Any]:  # Private - only used internally
-        """Perform the search operation."""
-        return self.__searcher.search(term)  # Polymorphism
+    @property
+    def searcher(self) -> BaseSearcher:
+        """Expose the composed searcher for introspection."""
+        return self._searcher
 
-    def __show_results(
-        self, matches: list[Any], term: str
-    ) -> None:  # Private - only used internally
-        """Show results."""
-        self.__display.show(matches, term)
 
-    def __get_cached_or_search(
-        self, term: str
-    ) -> list[Any]:  # Private - only used internally
-        """Get results from cache or perform new search."""
-        if term in self.__result_cache:
-            return self.__result_cache[term]
+class SearchApp:  # Composition
+    """Facade over the coordinator/state trio for backwards compatibility."""
 
-        results = self.__perform_search(term)
-        self.__result_cache[term] = results
-        return results
+    def __init__(self, searcher: BaseSearcher, display: SearchDisplay):
+        self.__state = SearchState()
+        self.__coordinator = SearchCoordinator(searcher, display, self.__state)
 
-    def __add_to_history(
-        self, term: str
-    ) -> None:  # Private - only used internally
-        """Add search term to history."""
-        if term not in self.__search_history:
-            self.__search_history.append(term)
+    def __str__(self) -> str:  # Magic Method
+        return f"SearchApp(searcher={type(self.__coordinator.searcher).__name__})"
+
+    def __len__(self) -> int:  # Magic Method
+        """Return number of searches performed."""
+        return len(self.__state.history)
+
+    def __contains__(self, term: str) -> bool:  # Magic Method
+        """Check if term was searched before."""
+        return term in self.__state.history
+
+    def __call__(self, term: str) -> None:  # Magic Method
+        self.run_cached(term)
+
+    def run(self, term: str) -> None:  # Polymorphism
+        self.__coordinator.run(term, use_cache=True)
+
+    def run_cached(self, term: str) -> None:  # Polymorphism
+        """Run search with caching enabled."""
+        cached = self.__state.fetch(term)
+        if cached is not None:
+            self.__coordinator.run(term, use_cache=True)
+        else:
+            self.run(term)
+
+    def run_fresh(self, term: str) -> None:  # Polymorphism
+        """Run search without using cache."""
+        self.__coordinator.run(term, use_cache=False)
 
     @property
     def search_history(self) -> list[str]:
         """Get search history (read-only)."""
-        return self.__search_history.copy()
+        return self.__state.history
 
     @property
     def cache_size(self) -> int:
         """Get current cache size."""
-        return len(self.__result_cache)
+        return self.__state.cache_size
 
     def clear_cache(self) -> None:
         """Clear search result cache."""
-        self.__result_cache.clear()
+        self.__state.clear_cache()
 
     def clear_history(self) -> None:
         """Clear search history."""
-        self.__search_history.clear()
+        self.__state.clear_history()
 
 
 class FastSearchApp(SearchApp):  # Inheritance + Polymorphism
@@ -106,7 +157,7 @@ class FastSearchApp(SearchApp):  # Inheritance + Polymorphism
 
     def run(self, term: str) -> None:  # Method override
         """Fast search execution."""
-        super().run_fresh(term)  # Skip cache for speed
+        self.run_fresh(term)  # Skip cache for speed
 
 
 class CachedSearchApp(SearchApp):  # Inheritance + Polymorphism
@@ -114,4 +165,4 @@ class CachedSearchApp(SearchApp):  # Inheritance + Polymorphism
 
     def run(self, term: str) -> None:  # Method override
         """Cached search execution."""
-        super().run_cached(term)  # Always use cache
+        super().run(term)  # Always use cache
