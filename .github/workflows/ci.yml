@@ -29,13 +29,11 @@ jobs:
     
     - name: Lint with ruff
       run: |
-        ruff check src/
-        ruff check main.py search.py || true
+        ruff check .
     
     - name: Import sort check
       run: |
-        isort --check-only src/
-        isort --check-only main.py search.py || true
+        isort --check-only .
     
     - name: Type check with mypy
       run: |
